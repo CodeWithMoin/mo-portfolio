@@ -2,7 +2,7 @@
 
 Personal portfolio for **Moinuddin Shaik**, an Applied Scientist and AI Systems Engineer working across retrieval, evaluation, ML infrastructure, and production AI systems.
 
-**Deployment target:** [mo-portfolio.pages.dev](https://mo-portfolio.pages.dev)
+**Deployment target:** [smoin.pages.dev](https://smoin.pages.dev)
 
 ## What this portfolio communicates
 
@@ -17,6 +17,8 @@ The site is designed around technical evidence rather than a traditional skills-
 ## Featured work
 
 - **DocuLens AI** — citation-first document intelligence and grounded retrieval.
+- **Attest** — self-verifying agentic RAG with claim-level evidence checks.
+- **Decode** — multi-agent workflows with artifact lineage and recoverable execution.
 - **Autonomous Taxonomy Systems at Amazon** — a public-safe summary of self-calibrating extraction, taxonomy induction, and explainability work.
 - **Evaluation for Taxonomies at Scale** — research on hierarchical quality and classification across large label spaces.
 - **EcoGuardian AI** — fast, offline waste classification for resource-constrained devices.

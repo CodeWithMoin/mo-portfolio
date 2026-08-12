@@ -9,7 +9,7 @@ export type Project = {
   role: string;
   metrics: { value: string; label: string }[];
   stack: string[];
-  visual: "retrieval" | "taxonomy" | "research" | "edge";
+  visual: "retrieval" | "taxonomy" | "research" | "edge" | "attest" | "decode";
   links: { label: string; href: string }[];
   problem: string;
   why: string;
@@ -43,7 +43,7 @@ export const projects: Project[] = [
     stack: ["FastAPI", "React 19", "PostgreSQL", "pgvector", "Celery", "Redis", "Docling"],
     visual: "retrieval",
     links: [
-      { label: "Live showcase", href: "https://doculens-ai.pages.dev/" },
+      { label: "Live prototype", href: "https://doculens-ai.pages.dev/" },
       { label: "Source", href: "https://github.com/CodeWithMoin/doculens-ai" },
     ],
     problem:
@@ -114,8 +114,180 @@ export const projects: Project[] = [
     ],
   },
   {
-    slug: "amazon-applied-science",
+    slug: "attest",
     index: "02",
+    title: "Attest",
+    eyebrow: "Agentic retrieval · Self-verifying answers",
+    year: "2026",
+    summary:
+      "An agentic RAG system that checks every generated claim against retrieved evidence, revises boundedly, and escalates uncertainty instead of smoothing it over.",
+    thesis:
+      "Grounded generation is not complete when a model cites something. It is complete when the system can verify the claim, measure the failure, and know when to ask for help.",
+    role: "Builder · Retrieval, verification, evaluation, and backend reliability",
+    metrics: [
+      { value: "4.15%", label: "failing citations after verification" },
+      { value: "0.473", label: "evidence F1 on Qasper" },
+      { value: "41", label: "questions in benchmark" },
+    ],
+    stack: ["Python", "LangGraph", "FastAPI", "PostgreSQL", "pgvector", "Redis"],
+    visual: "attest",
+    links: [],
+    problem:
+      "RAG systems can produce fluent answers whose citations do not actually support the claim being made. That makes a high-level answer score a poor proxy for whether a user can safely act on it.",
+    why:
+      "Evidence quality is a systems problem: retrieval, generation, verification, revision, and escalation all need explicit boundaries so uncertainty remains visible instead of becoming confident prose.",
+    architecture: [
+      "Question",
+      "Hybrid retrieval",
+      "Reranking",
+      "Draft answer",
+      "Independent judge",
+      "Bounded revision",
+      "Human escalation",
+    ],
+    architectureNote:
+      "The judge model receives the claim and exact retrieved passages, not the generator's hidden reasoning. It can approve, request a bounded revision, or route the case to human review.",
+    challenges: [
+      {
+        title: "Verifying the exact claim",
+        detail:
+          "The system evaluates claim-to-passage support rather than treating the presence of a citation as proof of grounding.",
+      },
+      {
+        title: "Combining retrieval signals",
+        detail:
+          "pgvector similarity and PostgreSQL full-text search are fused before reranking so exact terms and semantic matches can both survive retrieval.",
+      },
+      {
+        title: "Making uncertainty actionable",
+        detail:
+          "Explicit metrics distinguish supported answers, unsupported claims, and cases that should be escalated rather than revised indefinitely.",
+      },
+    ],
+    tradeoffs: [
+      {
+        decision: "Independent judge over self-checking generation",
+        rationale: "A separate verifier creates a meaningful failure boundary instead of asking the same generation path to grade itself.",
+      },
+      {
+        decision: "Bounded revision over open-ended reflection",
+        rationale: "A fixed retry budget makes latency and cost predictable while preserving a clear escalation path.",
+      },
+      {
+        decision: "Evidence metrics over answer fluency",
+        rationale: "The benchmark rewards support and calibrated failure, not only a readable final sentence.",
+      },
+    ],
+    experiments: [
+      "Compared citation failure rates before and after claim-level verification on a 41-question benchmark.",
+      "Evaluated hybrid retrieval and reranking against semantic retrieval alone.",
+      "Measured evidence F1 on human-annotated Qasper examples.",
+    ],
+    results: [
+      "Reduced failing citations from 9.87% to 4.15% after verification.",
+      "Reached 0.473 evidence F1 on the human-annotated Qasper benchmark.",
+      "Produced explicit escalation signals for unsupported answers and uncertain cases.",
+    ],
+    lessons: [
+      "A citation is a pointer; verification tests whether it actually supports the claim.",
+      "Retrieval quality and evaluator quality are coupled system dependencies.",
+      "Human escalation is a reliability feature when the system knows what it cannot prove.",
+    ],
+    future: [
+      "Expand claim decomposition for multi-part answers.",
+      "Publish a reproducible citation-verification benchmark.",
+      "Track verifier calibration and cost-quality tradeoffs across providers.",
+    ],
+  },
+  {
+    slug: "decode",
+    index: "03",
+    title: "Decode",
+    eyebrow: "Multi-agent workflow · Artifact lineage",
+    year: "2026",
+    summary:
+      "A production workflow for eight department-specific agents, with versioned artifacts, dependency-aware regeneration, and recoverable asynchronous execution.",
+    thesis:
+      "Multi-agent systems become useful when their work is inspectable, resumable, and bounded—not when they simply add more agents to a prompt.",
+    role: "Builder · Orchestration, artifact contracts, and distributed reliability",
+    metrics: [
+      { value: "8", label: "department agents" },
+      { value: "3-step", label: "generate / evaluate / revise loop" },
+      { value: "SSE", label: "resumable execution stream" },
+    ],
+    stack: ["Python", "FastAPI", "Redis", "ARQ", "PostgreSQL", "SSE"],
+    visual: "decode",
+    links: [],
+    problem:
+      "A multi-agent workflow can create useful work and still be impossible to operate if outputs cannot be traced, retries duplicate side effects, or one failed step forces the entire run to restart.",
+    why:
+      "The product is the workflow boundary: each artifact needs a version, each dependency needs a record, and each retry needs to be safe enough for production execution.",
+    architecture: [
+      "Workflow request",
+      "ARQ queue",
+      "Department agents",
+      "Artifact store",
+      "Dependency graph",
+      "Transactional outbox",
+      "Resumable SSE",
+    ],
+    architectureNote:
+      "Versioned artifacts and content hashes let the system regenerate only affected downstream work. Reliability primitives fence stale runs, make retries idempotent, and keep progress observable to the caller.",
+    challenges: [
+      {
+        title: "Keeping outputs traceable",
+        detail:
+          "Every artifact records its version, content hash, and upstream dependencies so a reviewer can follow the work back to its inputs.",
+      },
+      {
+        title: "Recovering from partial failure",
+        detail:
+          "Retries, stale-run fencing, and a transactional outbox preserve progress while preventing duplicate downstream effects.",
+      },
+      {
+        title: "Making async work visible",
+        detail:
+          "Resumable server-sent events keep clients informed even when the worker or network connection is interrupted.",
+      },
+    ],
+    tradeoffs: [
+      {
+        decision: "Explicit artifact graph over hidden agent state",
+        rationale: "A durable graph makes invalidation and review possible without reconstructing the model's internal context.",
+      },
+      {
+        decision: "Bounded loops over autonomous recursion",
+        rationale: "Each agent can generate, evaluate, and revise within a known budget before escalating to a human.",
+      },
+      {
+        decision: "PostgreSQL and Redis over a new orchestration platform",
+        rationale: "Existing durable primitives keep the system understandable while the workflow contracts are still evolving.",
+      },
+    ],
+    experiments: [
+      "Exercised generate/evaluate/revise loops with bounded retries and explicit human escalation.",
+      "Regenerated downstream artifacts after changing one upstream content hash.",
+      "Interrupted workers and SSE connections to validate recovery and resume behavior.",
+    ],
+    results: [
+      "Coordinated eight department-specific agents behind one observable workflow boundary.",
+      "Made artifact provenance and selective regeneration first-class system behavior.",
+      "Added production reliability primitives for idempotent, resumable asynchronous work.",
+    ],
+    lessons: [
+      "Agent autonomy needs a durable contract with the rest of the system.",
+      "Lineage is useful only when it changes what gets recomputed and what can be reviewed.",
+      "A recoverable workflow is more valuable than a clever but opaque orchestration demo.",
+    ],
+    future: [
+      "Add operator views for artifact diffs and dependency invalidation.",
+      "Benchmark queue fairness and throughput as department count grows.",
+      "Instrument end-to-end cost and latency by agent and workflow stage.",
+    ],
+  },
+  {
+    slug: "amazon-applied-science",
+    index: "04",
     title: "Autonomous Taxonomy Systems at Amazon",
     eyebrow: "Applied science · Public summary",
     year: "2026",
@@ -209,7 +381,7 @@ export const projects: Project[] = [
   },
   {
     slug: "taxonomy-evaluation-research",
-    index: "03",
+    index: "05",
     title: "Evaluation for Taxonomies at Scale",
     eyebrow: "Research · UAM + LUMEN",
     year: "2026",
@@ -291,7 +463,7 @@ export const projects: Project[] = [
   },
   {
     slug: "ecoguardian-ai",
-    index: "04",
+    index: "06",
     title: "EcoGuardian AI",
     eyebrow: "On-device applied ML",
     year: "2025",

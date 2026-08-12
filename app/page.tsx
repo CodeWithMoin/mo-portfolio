@@ -10,7 +10,7 @@ const experience = [
   {
     company: "Amazon · RBS Sciences",
     role: "Applied Scientist Intern",
-    period: "Feb–Jun 2026",
+    period: "Jan–Jun 2026",
     location: "Bengaluru",
     impact:
       "Owned a self-calibrating knowledge-extraction system from problem framing to production, then expanded into autonomous taxonomy generation and grounded metric explainability. Cut onboarding from five to seven days to under 18 hours, reached 0.74 F1 against a 0.71 manual baseline, and accelerated extraction 2.7× at 53% lower cost.",
@@ -117,7 +117,7 @@ export default function Home() {
           <SectionHeading
             eyebrow="01 · Selected work"
             title="Systems where correctness has to survive contact with reality."
-            description="Four case studies spanning production LLM workflows, taxonomy research, retrieval infrastructure, and on-device ML. Each one starts with the operating constraint—not the model name."
+            description="Six case studies spanning grounded agents, durable multi-agent workflows, production LLM systems, taxonomy research, retrieval infrastructure, and on-device ML. Each one starts with the operating constraint—not the model name."
           />
         </Reveal>
         <div className="space-y-7">

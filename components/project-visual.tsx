@@ -4,7 +4,7 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
 import { useRef } from "react";
 import { cn } from "@/lib/cn";
 
-type VisualVariant = "retrieval" | "taxonomy" | "research" | "edge";
+type VisualVariant = "retrieval" | "taxonomy" | "research" | "edge" | "attest" | "decode";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -25,7 +25,7 @@ export function ProjectVisual({ variant, className }: { variant: VisualVariant; 
         <div className="absolute inset-x-0 top-0 z-20 flex h-11 items-center justify-between border-b border-[#d9dce2] bg-[#eff1f5] px-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#6b707c]">
           <div className="flex items-center gap-3">
             <span className="flex gap-1.5" aria-hidden="true"><i className="size-1.5 rounded-full bg-[#c9ccd3]" /><i className="size-1.5 rounded-full bg-[#c9ccd3]" /><i className="size-1.5 rounded-full bg-[#c9ccd3]" /></span>
-            <span>{variant === "edge" ? "Edge runtime" : variant === "research" ? "Evaluation bench" : variant === "taxonomy" ? "Structure workspace" : "Private workspace"}</span>
+          <span>{variant === "edge" ? "Edge runtime" : variant === "research" ? "Evaluation bench" : variant === "taxonomy" ? "Structure workspace" : variant === "attest" ? "Verification bench" : variant === "decode" ? "Workflow control" : "Private workspace"}</span>
           </div>
           <span className="flex items-center gap-1.5 normal-case tracking-normal"><i className="size-1.5 rounded-full bg-[#149b6f]" /> Verified</span>
         </div>
@@ -33,6 +33,8 @@ export function ProjectVisual({ variant, className }: { variant: VisualVariant; 
         {variant === "taxonomy" && <TaxonomyVisual show={show} />}
         {variant === "research" && <ResearchVisual show={show} />}
         {variant === "edge" && <EdgeVisual show={show} />}
+        {variant === "attest" && <AttestVisual show={show} />}
+        {variant === "decode" && <DecodeVisual show={show} />}
       </div>
     </div>
   );
@@ -130,6 +132,49 @@ function EdgeVisual({ show }: { show: boolean }) {
       <div className="ml-4 space-y-2">
         {["<300ms", "−60%", "Offline"].map((metric, index) => <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : 8 }} className={cn("rounded-lg border bg-[#fdfcf9] px-4 py-3", index === 2 ? "border-[#addbc9]" : "border-[#deddd8]")} key={metric} transition={{ delay: 0.26 + index * 0.1, duration: 0.45, ease }}><p className={cn("font-mono text-xs", index === 2 ? "text-[#166c52]" : "text-[#4f5662]")}>{metric}</p></motion.div>)}
       </div>
+    </div>
+  );
+}
+
+function AttestVisual({ show }: { show: boolean }) {
+  return (
+    <div className="product-grid flex h-full min-h-[320px] flex-col justify-center gap-3 px-4 pb-4 pt-14 sm:px-6">
+      <div className="grid gap-3 sm:grid-cols-[.82fr_1.18fr]">
+        <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : -10 }} className="rounded-xl border border-[#deddd8] bg-[#fdfcf9] p-4 shadow-sm" transition={{ duration: 0.55, ease }}>
+          <p className="font-mono text-[8px] uppercase tracking-[0.15em] text-[#737986]">Incoming claim</p>
+          <p className="mt-4 text-[11px] font-medium leading-5">The agreement renews annually unless written notice is provided.</p>
+          <div className="mt-4 flex items-center gap-2 font-mono text-[8px] text-[#6b707c]"><span className="size-1.5 rounded-full bg-[#246bfd]" /> Needs evidence</div>
+        </motion.div>
+        <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : 10 }} className="rounded-xl border border-[#a9c4ff] bg-white p-4 shadow-[0_12px_30px_rgba(39,86,190,.1)]" transition={{ delay: 0.2, duration: 0.55, ease }}>
+          <div className="flex items-center justify-between"><p className="font-mono text-[8px] uppercase tracking-[0.15em] text-[#2456c4]">Retrieved evidence</p><span className="rounded-full bg-[#eef3ff] px-2 py-1 font-mono text-[8px] text-[#2456c4]">2 passages</span></div>
+          <div className="mt-4 space-y-2"><div className="rounded-lg border border-[#d9e4ff] bg-[#f5f8ff] px-3 py-2 text-[9px] leading-4">MSA · page 18 <span className="float-right font-mono text-[#2456c4]">.96</span></div><div className="rounded-lg border border-[#deddd8] bg-[#fdfcf9] px-3 py-2 text-[9px] leading-4">Renewal schedule · page 4 <span className="float-right font-mono text-[#6b707c]">.89</span></div></div>
+        </motion.div>
+      </div>
+      <motion.div animate={{ opacity: show ? 1 : 0, y: show ? 0 : 8 }} className="rounded-xl border border-[#f1cf69] bg-[#fff3c8] px-4 py-3" transition={{ delay: 0.48, duration: 0.5, ease }}>
+        <div className="flex items-center justify-between"><span className="text-[10px] font-medium">Verified answer</span><span className="font-mono text-[8px] text-[#8b5c00]">4.15% citation failures</span></div>
+        <p className="mt-2 text-[10px] leading-4 text-[#51420f]">Evidence supports annual renewal with 60 days&apos; written notice.</p>
+      </motion.div>
+    </div>
+  );
+}
+
+function DecodeVisual({ show }: { show: boolean }) {
+  const departments = ["Research", "Product", "Legal", "Finance"];
+  return (
+    <div className="product-grid flex h-full min-h-[320px] flex-col justify-center px-4 pb-4 pt-14 sm:px-6">
+      <div className="rounded-xl border border-[#deddd8] bg-[#fdfcf9] p-4 shadow-sm">
+        <div className="flex items-center justify-between font-mono text-[8px] uppercase tracking-[0.15em] text-[#6b707c]"><span>Artifact lineage</span><span>Run · 0084</span></div>
+        <div className="mt-4 grid grid-cols-[.8fr_auto_1.2fr] items-center gap-2">
+          <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : -8 }} className="rounded-lg border border-[#deddd8] bg-white p-3" transition={{ duration: 0.5, ease }}><p className="font-mono text-[8px] uppercase text-[#737986]">Input</p><p className="mt-2 text-[10px] font-medium">Brief v12</p><p className="mt-1 font-mono text-[8px] text-[#6b707c]">hash · 9a2f</p></motion.div>
+          <motion.div animate={{ opacity: show ? 1 : 0, scaleX: show ? 1 : 0 }} className="h-px w-6 origin-left bg-[#8cadff]" transition={{ delay: 0.24, duration: 0.4, ease }} />
+          <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : 8 }} className="rounded-lg border border-[#a9c4ff] bg-[#eef3ff] p-3" transition={{ delay: 0.3, duration: 0.5, ease }}><div className="flex items-center justify-between"><p className="font-mono text-[8px] uppercase text-[#2456c4]">Generated artifacts</p><span className="text-[9px] text-[#149b6f]">● live</span></div><div className="mt-3 grid grid-cols-2 gap-2">{departments.map((department, index) => <motion.div animate={{ opacity: show ? 1 : 0, y: show ? 0 : 5 }} className="rounded-md border border-[#d9e4ff] bg-white px-2 py-2 text-[9px]" key={department} transition={{ delay: 0.48 + index * 0.08, duration: 0.4, ease }}>{department}</motion.div>)}</div></motion.div>
+        </div>
+      </div>
+      <motion.div animate={{ opacity: show ? 1 : 0, y: show ? 0 : 8 }} className="mt-3 grid grid-cols-3 gap-2 font-mono text-[8px]" transition={{ delay: 0.75, duration: 0.5, ease }}>
+        <div className="rounded-lg border border-[#deddd8] bg-[#fdfcf9] px-3 py-3"><span className="text-[#6b707c]">Retries</span><strong className="mt-1 block text-[11px] text-[#17191f]">02</strong></div>
+        <div className="rounded-lg border border-[#deddd8] bg-[#fdfcf9] px-3 py-3"><span className="text-[#6b707c]">Idempotent</span><strong className="mt-1 block text-[11px] text-[#149b6f]">yes</strong></div>
+        <div className="rounded-lg border border-[#f1cf69] bg-[#fff3c8] px-3 py-3"><span className="text-[#8b5c00]">SSE</span><strong className="mt-1 block text-[11px] text-[#7a5300]">resumable</strong></div>
+      </motion.div>
     </div>
   );
 }
