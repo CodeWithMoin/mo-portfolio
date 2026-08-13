@@ -16,7 +16,7 @@ export function Button({ children, className, href, variant = "primary", ...prop
   };
 
   const classes = cn(
-    "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border px-5 text-sm font-medium transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "inline-flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border px-5 text-sm font-medium transition duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     styles[variant],
     className,
   );

@@ -43,7 +43,6 @@ export const projects: Project[] = [
     stack: ["FastAPI", "React 19", "PostgreSQL", "pgvector", "Celery", "Redis", "Docling"],
     visual: "retrieval",
     links: [
-      { label: "Live prototype", href: "https://doculens-ai.pages.dev/" },
       { label: "Source", href: "https://github.com/CodeWithMoin/doculens-ai" },
     ],
     problem:
@@ -203,15 +202,15 @@ export const projects: Project[] = [
     slug: "decode",
     index: "03",
     title: "Decode",
-    eyebrow: "Multi-agent workflow · Artifact lineage",
+    eyebrow: "AI-native production studio · Building",
     year: "2026",
     summary:
-      "A production workflow for eight department-specific agents, with versioned artifacts, dependency-aware regeneration, and recoverable asynchronous execution.",
+      "An AI-native production studio that turns research papers and documentation into educational videos—built as a workspace to direct, not a prompt box to wait on.",
     thesis:
-      "Multi-agent systems become useful when their work is inspectable, resumable, and bounded—not when they simply add more agents to a prompt.",
-    role: "Builder · Orchestration, artifact contracts, and distributed reliability",
+      "Decode should never feel like a chatbot. Eight departments generate, evaluate, and revise their own work against versioned artifacts, so a person can inspect, edit, or regenerate any single piece without re-running the whole project.",
+    role: "Builder · Orchestration, artifact contracts, and evaluation loops",
     metrics: [
-      { value: "8", label: "department agents" },
+      { value: "8", label: "departments, one orchestrator" },
       { value: "3-step", label: "generate / evaluate / revise loop" },
       { value: "SSE", label: "resumable execution stream" },
     ],
@@ -219,70 +218,70 @@ export const projects: Project[] = [
     visual: "decode",
     links: [],
     problem:
-      "A multi-agent workflow can create useful work and still be impossible to operate if outputs cannot be traced, retries duplicate side effects, or one failed step forces the entire run to restart.",
+      "Turning a research paper into a good educational video is a production job—structuring the argument, writing narration, planning visuals, timing them against voice—not a single generation step. Most AI tools compress that into one prompt and one output, which means no draft is inspectable and no single scene can be fixed without redoing everything around it.",
     why:
-      "The product is the workflow boundary: each artifact needs a version, each dependency needs a record, and each retry needs to be safe enough for production execution.",
+      "The goal is software that feels like directing a production team, not typing into a chat box. Every department—Intake, Architect, Author, Visualizer, Renderer, Composer, Reviewer, Publisher—owns one responsibility, exposes what it received and produced, and hands off through a versioned artifact rather than a hidden internal state.",
     architecture: [
-      "Workflow request",
-      "ARQ queue",
-      "Department agents",
-      "Artifact store",
-      "Dependency graph",
-      "Transactional outbox",
-      "Resumable SSE",
+      "Production brief",
+      "Teaching plan",
+      "Scene script",
+      "Visual specification",
+      "Rendered assets",
+      "Timeline",
+      "Review report",
     ],
     architectureNote:
-      "Versioned artifacts and content hashes let the system regenerate only affected downstream work. Reliability primitives fence stale runs, make retries idempotent, and keep progress observable to the caller.",
+      "One Project Manager routes artifacts between departments; departments never call each other directly. Each department receives only the context it needs—the Renderer never sees the source paper—and runs its own generate/evaluate/revise loop before publishing, escalating to a human rather than retrying silently past a set budget.",
     challenges: [
       {
-        title: "Keeping outputs traceable",
+        title: "Keeping departments isolated",
         detail:
-          "Every artifact records its version, content hash, and upstream dependencies so a reviewer can follow the work back to its inputs.",
+          "Context is scoped per department by design: the Reviewer never touches the original PDF, the Renderer never sees the full paper. Smaller context cuts token cost, latency, and hallucination surface.",
       },
       {
-        title: "Recovering from partial failure",
+        title: "Regenerating without restarting",
         detail:
-          "Retries, stale-run fencing, and a transactional outbox preserve progress while preventing duplicate downstream effects.",
+          "Artifacts are versioned against their parents, so changing one scene's script only invalidates that scene's downstream visuals and timeline—not the rest of the project.",
       },
       {
-        title: "Making async work visible",
+        title: "Bounding agent autonomy",
         detail:
-          "Resumable server-sent events keep clients informed even when the worker or network connection is interrupted.",
+          "Each department's evaluate/revise loop runs inside a fixed retry budget. Exceeding it escalates to a human instead of continuing silently.",
       },
     ],
     tradeoffs: [
       {
-        decision: "Explicit artifact graph over hidden agent state",
-        rationale: "A durable graph makes invalidation and review possible without reconstructing the model's internal context.",
+        decision: "Artifact handoffs over direct department-to-department calls",
+        rationale: "Routing everything through the Project Manager keeps each department replaceable and every handoff inspectable.",
       },
       {
         decision: "Bounded loops over autonomous recursion",
-        rationale: "Each agent can generate, evaluate, and revise within a known budget before escalating to a human.",
+        rationale: "Each department can generate, evaluate, and revise within a known budget before escalating to a human.",
       },
       {
         decision: "PostgreSQL and Redis over a new orchestration platform",
-        rationale: "Existing durable primitives keep the system understandable while the workflow contracts are still evolving.",
+        rationale: "Durable, well-understood primitives while the department contracts are still evolving.",
       },
     ],
     experiments: [
-      "Exercised generate/evaluate/revise loops with bounded retries and explicit human escalation.",
-      "Regenerated downstream artifacts after changing one upstream content hash.",
+      "Exercised generate/evaluate/revise loops per department with bounded retries and explicit human escalation.",
+      "Regenerated downstream artifacts after changing a single upstream artifact.",
       "Interrupted workers and SSE connections to validate recovery and resume behavior.",
     ],
     results: [
-      "Coordinated eight department-specific agents behind one observable workflow boundary.",
-      "Made artifact provenance and selective regeneration first-class system behavior.",
-      "Added production reliability primitives for idempotent, resumable asynchronous work.",
+      "Working orchestration across all eight departments, coordinated through one Project Manager.",
+      "Evaluation loops (generate → evaluate → revise → approve) running per department with bounded retries.",
+      "The research-paper-to-video pipeline itself—Author through Publisher producing a finished video—is still being built.",
     ],
     lessons: [
-      "Agent autonomy needs a durable contract with the rest of the system.",
-      "Lineage is useful only when it changes what gets recomputed and what can be reviewed.",
-      "A recoverable workflow is more valuable than a clever but opaque orchestration demo.",
+      "Agent autonomy needs a durable contract with the rest of the system, not just a capable model.",
+      "Context isolation is a reliability feature, not just a cost optimization.",
+      "A recoverable, inspectable workflow is worth more early than a flashier but opaque end-to-end demo.",
     ],
     future: [
-      "Add operator views for artifact diffs and dependency invalidation.",
-      "Benchmark queue fairness and throughput as department count grows.",
-      "Instrument end-to-end cost and latency by agent and workflow stage.",
+      "Ship the full paper-to-video pipeline end to end.",
+      "Extend beyond video to interactive lessons, quizzes, flashcards, and podcasts from the same artifact graph.",
+      "Add operator views for artifact diffs, cost tracking, and dependency invalidation.",
     ],
   },
   {
@@ -604,18 +603,18 @@ export const repositories = [
     href: "https://github.com/CodeWithMoin/doculens-ai",
   },
   {
+    name: "attest",
+    description: "Agentic research assistant that verifies its own citations, with measured trade-offs.",
+    language: "Python",
+    license: "MIT",
+    href: "https://github.com/CodeWithMoin/attest",
+  },
+  {
     name: "EcoGuardian-AI",
     description: "On-device waste classification with React Native and TensorFlow Lite.",
     language: "TypeScript",
     license: "MIT",
     href: "https://github.com/CodeWithMoin/EcoGuardian-AI",
-  },
-  {
-    name: "DatasetOptimizer",
-    description: "A small Python utility for reducing image datasets while preserving training utility.",
-    language: "Python",
-    license: "Public",
-    href: "https://github.com/CodeWithMoin/DatasetOptimizer",
   },
 ];
 

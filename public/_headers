@@ -1,0 +1,4 @@
+# The résumé gets swapped independently of code changes — force revalidation on every
+# request so a new upload shows up immediately instead of waiting out a cached copy.
+/Moinuddin_Shaik_Resume.pdf
+  Cache-Control: no-cache

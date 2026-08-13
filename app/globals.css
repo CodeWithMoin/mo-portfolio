@@ -19,33 +19,20 @@
 }
 
 :root {
-  --background: #f5f5f3;
-  --foreground: #101111;
-  --surface: #ffffff;
-  --surface-raised: #ededeb;
-  --muted: #696b6c;
-  --muted-strong: #9b9d9e;
-  --border: rgba(16, 17, 17, 0.12);
-  --accent: #315efb;
-  --card-shadow: 0 18px 60px rgba(15, 16, 16, 0.06);
-  --nav-shadow: 0 10px 30px rgba(15, 16, 16, 0.08);
+  --background: #f4f4f3;
+  --foreground: #0d0d0c;
+  --surface: #fafaf9;
+  --surface-raised: #ececea;
+  --muted: #6b6862;
+  --muted-strong: #b6b3ac;
+  --border: rgba(13, 13, 12, 0.08);
+  --accent: #ff5a1f;
+  --status: #22c55e;
+  --card-shadow: 0 2px 3px rgba(13, 13, 12, 0.02), 0 12px 32px rgba(13, 13, 12, 0.04);
+  --nav-shadow: 0 4px 16px rgba(13, 13, 12, 0.06);
   --font-geist-sans: "Geist";
   --font-geist-mono: "Geist Mono";
   color-scheme: light;
-}
-
-.dark {
-  --background: #090a0a;
-  --foreground: #f4f5f3;
-  --surface: #111212;
-  --surface-raised: #171818;
-  --muted: #8d9290;
-  --muted-strong: #5e6261;
-  --border: rgba(255, 255, 255, 0.105);
-  --accent: #82a3ff;
-  --card-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
-  --nav-shadow: 0 14px 45px rgba(0, 0, 0, 0.32);
-  color-scheme: dark;
 }
 
 * {
@@ -61,9 +48,7 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(circle at 85% 5%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 27rem),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), "Geist", Arial, sans-serif;
   text-rendering: optimizeLegibility;
@@ -94,21 +79,9 @@ button {
   color: var(--foreground);
 }
 
-.hero-glow {
-  position: absolute;
-  top: 7rem;
-  right: -20%;
-  width: min(68vw, 54rem);
-  aspect-ratio: 1;
-  border-radius: 999px;
-  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 14%, transparent), transparent 65%);
-  filter: blur(18px);
-  pointer-events: none;
-}
-
 .visual-panel {
   background:
-    radial-gradient(circle at 80% 0%, rgba(49, 94, 251, 0.13), transparent 42%),
+    radial-gradient(circle at 80% 0%, rgba(255, 90, 31, 0.13), transparent 42%),
     #111318;
 }
 
@@ -123,23 +96,29 @@ button {
   background-color: var(--surface);
   background-image:
     linear-gradient(var(--border) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border) 1px, transparent 1px),
-    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 55%);
-  background-size: 32px 32px, 32px 32px, 100% 100%;
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 32px 32px;
 }
 
 .research-card {
-  background:
-    linear-gradient(145deg, color-mix(in srgb, var(--accent) 5%, transparent), transparent 42%),
-    var(--surface);
+  background: var(--surface);
 }
 
-@media (max-width: 640px) {
-  .hero-glow {
-    top: 5rem;
-    right: -55%;
-    width: 34rem;
-  }
+/* Soft top-down fade: card content dissolves into the surface toward the top edge,
+   so a list reads as continuing past the label pill. */
+.fade-top {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, rgba(0, 0, 0, 0.12) 2.2rem, #000 5.5rem);
+  mask-image: linear-gradient(to bottom, transparent 0, rgba(0, 0, 0, 0.12) 2.2rem, #000 5.5rem);
+}
+
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 @media (prefers-reduced-motion: reduce) {

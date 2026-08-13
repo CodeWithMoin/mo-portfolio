@@ -46,8 +46,8 @@ function CaseSection({
     <Reveal>
       <section className="grid gap-6 border-t border-border py-12 md:grid-cols-[0.34fr_0.66fr] md:py-16">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.17em] text-muted">{index}</p>
-          <h2 className="mt-3 text-xl font-medium tracking-[-0.03em]">{title}</h2>
+          <span className="inline-flex rounded-full border border-border bg-white px-3 py-1 text-[13px] font-medium text-muted shadow-[0_1px_2px_rgba(13,13,12,0.05)]">{index}</span>
+          <h2 className="mt-3 text-xl font-bold tracking-[-0.03em]">{title}</h2>
         </div>
         <div>{children}</div>
       </section>
@@ -65,16 +65,16 @@ export default async function ProjectPage({ params }: PageProps) {
 
   return (
     <main>
-      <SiteHeader compact />
+      <SiteHeader />
       <article className="mx-auto max-w-[1180px] px-5 pb-20 pt-32 sm:px-8 md:pt-40 lg:px-10">
         <Reveal>
-          <Link className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted transition hover:text-foreground" href="/#work">
-            ← Selected work
+          <Link className="inline-flex items-center gap-1.5 text-[15px] font-medium text-muted transition hover:text-foreground" href="/#work">
+            <span aria-hidden="true">←</span> Selected work
           </Link>
           <div className="mt-10 grid gap-10 lg:grid-cols-[1.17fr_0.83fr] lg:items-end">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">{project.eyebrow} · {project.year}</p>
-              <h1 className="mt-6 max-w-4xl text-balance text-[clamp(3.6rem,8vw,7.5rem)] font-medium leading-[0.9] tracking-[-0.07em]">
+              <span className="inline-flex rounded-full border border-border bg-white px-3.5 py-1.5 text-[13px] font-medium text-foreground/70 shadow-[0_1px_2px_rgba(13,13,12,0.05)]">{project.eyebrow} · {project.year}</span>
+              <h1 className="mt-6 max-w-4xl text-balance text-[clamp(3rem,7vw,6rem)] font-bold leading-[1.02] tracking-[-0.045em]">
                 {project.title}
               </h1>
             </div>
@@ -87,6 +87,15 @@ export default async function ProjectPage({ params }: PageProps) {
             {project.slug === "amazon-applied-science" && (
               <span className="inline-flex min-h-11 items-center rounded-full border border-border bg-surface px-5 text-sm text-muted">Public summary only</span>
             )}
+            {project.slug === "decode" && (
+              <span className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface px-5 text-sm text-muted">
+                <span className="relative flex size-2">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-60" />
+                  <span className="relative inline-flex size-2 rounded-full bg-accent" />
+                </span>
+                Currently building
+              </span>
+            )}
           </div>
         </Reveal>
 
@@ -97,7 +106,7 @@ export default async function ProjectPage({ params }: PageProps) {
         <div className="mt-6 grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-3">
           {project.metrics.map((metric) => (
             <div className="bg-surface p-5 sm:p-6" key={metric.label}>
-              <p className="text-3xl font-medium tracking-[-0.045em]">{metric.value}</p>
+              <p className="text-3xl font-bold tracking-[-0.04em]">{metric.value}</p>
               <p className="mt-2 text-sm text-muted">{metric.label}</p>
             </div>
           ))}
@@ -142,7 +151,7 @@ export default async function ProjectPage({ params }: PageProps) {
             <div className="grid gap-4">
               {project.challenges.map((challenge, index) => (
                 <Card className="grid gap-4 p-6 sm:grid-cols-[auto_1fr]" key={challenge.title}>
-                  <span className="font-mono text-[10px] text-accent">0{index + 1}</span>
+                  <span className="text-[13px] font-semibold text-accent">0{index + 1}</span>
                   <div>
                     <h3 className="text-xl font-medium tracking-[-0.03em]">{challenge.title}</h3>
                     <p className="mt-3 text-sm leading-7 text-muted">{challenge.detail}</p>
@@ -167,7 +176,7 @@ export default async function ProjectPage({ params }: PageProps) {
             <ol className="space-y-4">
               {project.experiments.map((experiment, index) => (
                 <li className="flex gap-4 rounded-2xl border border-border bg-surface p-5 text-base leading-7 text-muted" key={experiment}>
-                  <span className="font-mono text-[10px] text-accent">0{index + 1}</span><span>{experiment}</span>
+                  <span className="text-[13px] font-semibold text-accent">0{index + 1}</span><span>{experiment}</span>
                 </li>
               ))}
             </ol>
@@ -196,11 +205,11 @@ export default async function ProjectPage({ params }: PageProps) {
 
         <Reveal>
           <aside className="mt-20 rounded-[2rem] border border-border bg-surface p-7 sm:p-10 md:mt-28">
-            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted">Next case study</p>
+            <span className="inline-flex rounded-full border border-border bg-white px-3.5 py-1.5 text-[13px] font-medium text-foreground/70 shadow-[0_1px_2px_rgba(13,13,12,0.05)]">Next case study</span>
             <div className="mt-7 flex flex-col justify-between gap-8 md:flex-row md:items-end">
               <div>
                 <p className="text-sm text-accent">{nextProject.eyebrow}</p>
-                <h2 className="mt-3 text-4xl font-medium tracking-[-0.05em] sm:text-5xl">{nextProject.title}</h2>
+                <h2 className="mt-3 text-4xl font-medium tracking-[-0.02em] sm:text-5xl">{nextProject.title}</h2>
               </div>
               <Button href={`/work/${nextProject.slug}`}>Read next <span aria-hidden="true">→</span></Button>
             </div>
@@ -212,7 +221,7 @@ export default async function ProjectPage({ params }: PageProps) {
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-4">
           <p>© 2026 Moinuddin Shaik</p>
           <div className="flex gap-5">
-            <a className="transition hover:text-foreground" href="mailto:moinuddinmoin1357@gmail.com">Email</a>
+            <a className="transition hover:text-foreground" href="mailto:hello@moinuddin.app">Email</a>
             <a className="transition hover:text-foreground" href="https://github.com/CodeWithMoin" rel="noreferrer" target="_blank">GitHub</a>
             <a className="transition hover:text-foreground" href="/Moinuddin_Shaik_Resume.pdf" target="_blank">Résumé</a>
           </div>

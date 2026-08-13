@@ -4,12 +4,16 @@ export const dynamic = "force-static";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Moinuddin Shaik · Applied Scientist",
+    name: "Moinuddin Shaik · I build things",
     short_name: "Moinuddin Shaik",
-    description: "Applied Scientist and AI Systems Engineer building reliable AI systems.",
+    description: "AI systems, most recently at Amazon. Before that, video work for 200+ clients and a Student Nationals silver.",
     start_url: "/",
     display: "standalone",
-    background_color: "#090a0a",
-    theme_color: "#090a0a",
+    background_color: "#f4f4f3",
+    theme_color: "#f4f4f3",
+    icons: [
+      { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
   };
 }

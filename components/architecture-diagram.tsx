@@ -6,7 +6,7 @@ export function ArchitectureDiagram({ nodes, note }: { nodes: string[]; note?: s
           {nodes.map((node, index) => (
             <li className="flex items-center gap-2" key={node}>
               <div className="min-w-32 rounded-xl border border-border bg-background/90 px-4 py-4 shadow-sm">
-                <span className="block font-mono text-[10px] text-accent">0{index + 1}</span>
+                <span className="block text-[13px] font-semibold text-accent">0{index + 1}</span>
                 <span className="mt-2 block text-sm font-medium">{node}</span>
               </div>
               {index < nodes.length - 1 && <span className="text-sm text-muted" aria-hidden="true">→</span>}

@@ -2,7 +2,7 @@
 
 Personal portfolio for **Moinuddin Shaik**, an Applied Scientist and AI Systems Engineer working across retrieval, evaluation, ML infrastructure, and production AI systems.
 
-**Deployment target:** [smoin.pages.dev](https://smoin.pages.dev)
+**Deployment target:** [moinuddin.app](https://moinuddin.app)
 
 ## What this portfolio communicates
 
@@ -83,6 +83,6 @@ public/                 Résumé, fonts, and project imagery
 
 ## Contact
 
-- Email: [moinuddinmoin1357@gmail.com](mailto:moinuddinmoin1357@gmail.com)
+- Email: [hello@moinuddin.app](mailto:hello@moinuddin.app)
 - GitHub: [CodeWithMoin](https://github.com/CodeWithMoin)
 - LinkedIn: [codewithmoin](https://linkedin.com/in/codewithmoin)
