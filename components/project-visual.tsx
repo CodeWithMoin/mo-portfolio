@@ -74,13 +74,13 @@ function TaxonomyVisual({ show }: { show: boolean }) {
   const nodes = ["Billing", "Delivery", "Returns", "Quality"];
   return (
     <div className="product-grid flex h-full min-h-[320px] flex-col justify-center px-5 pb-5 pt-16">
-      <div className="grid grid-cols-[.82fr_auto_1.18fr] items-center gap-3">
+      <div className="grid grid-cols-1 items-center gap-3 sm:grid-cols-[.82fr_auto_1.18fr]">
         <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : -10 }} className="rounded-xl border border-[#deddd8] bg-[#fdfcf9] p-4 shadow-sm" transition={{ duration: 0.55, ease }}>
           <p className="font-mono text-[8px] uppercase tracking-[0.15em] text-[#737986]">Unstructured feedback</p>
           <div className="mt-4 space-y-2">{["w-full", "w-[88%]", "w-[70%]"].map((width) => <div className={cn("h-1.5 rounded bg-[#dfe2e8]", width)} key={width} />)}</div>
           <span className="mt-4 inline-flex rounded-full bg-[#fff1ea] px-2 py-1 font-mono text-[8px] text-[#c04315]">80k records</span>
         </motion.div>
-        <motion.div animate={{ opacity: show ? 1 : 0, scaleX: show ? 1 : 0 }} className="h-px w-8 origin-left bg-[#ffab85]" transition={{ delay: 0.28, duration: 0.45, ease }} />
+        <motion.div animate={{ opacity: show ? 1 : 0, scaleX: show ? 1 : 0 }} className="hidden h-px w-8 origin-left bg-[#ffab85] sm:block" transition={{ delay: 0.28, duration: 0.45, ease }} />
         <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : 10 }} className="rounded-xl border border-[#ffc2a8] bg-white p-4 shadow-[0_12px_30px_rgba(190,74,30,.1)]" transition={{ delay: 0.35, duration: 0.55, ease }}>
           <div className="flex items-center justify-between"><p className="font-mono text-[8px] uppercase tracking-[0.15em] text-[#c04315]">Induced hierarchy</p><span className="rounded-full bg-[#fff3c8] px-2 py-1 font-mono text-[8px] text-[#8b5c00]">F1 · 0.74</span></div>
           <div className="mt-4 rounded-lg border border-[#ffdccd] bg-[#fff1ea] px-3 py-2 text-[10px] font-medium">Customer signals</div>
