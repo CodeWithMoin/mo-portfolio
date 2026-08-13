@@ -68,7 +68,7 @@ const milestones = [
   {
     age: "20",
     domain: "Amazon",
-    detail: "Applied Scientist Intern. Production LLM systems over millions of feedback records.",
+    detail: "Applied Scientist Intern, 1 of ~200 across India. Selected via Amazon ML Summer School 2025 — 3,000 of 1.6 lakh applicants.",
   },
   {
     age: "Now",

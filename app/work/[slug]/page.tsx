@@ -80,12 +80,16 @@ export default async function ProjectPage({ params }: PageProps) {
             </div>
             <p className="max-w-2xl text-pretty text-xl leading-8 text-muted sm:text-2xl sm:leading-9">{project.thesis}</p>
           </div>
+          <p className="mt-6 text-[15px] font-medium text-foreground/70">{project.role}</p>
           <div className="mt-12 flex flex-wrap gap-3">
             {project.links.map((link, index) => (
               <Button href={link.href} key={link.href} variant={index === 0 ? "primary" : "secondary"}>{link.label} ↗</Button>
             ))}
             {project.slug === "amazon-applied-science" && (
-              <span className="inline-flex min-h-11 items-center rounded-full border border-border bg-surface px-5 text-sm text-muted">Public summary only</span>
+              <>
+                <span className="inline-flex min-h-11 items-center rounded-full border border-border bg-surface px-5 text-sm text-muted">Public summary only</span>
+                <span className="inline-flex min-h-11 items-center rounded-full border border-border bg-surface px-5 text-sm text-muted">1 of ~200 interns across India · Amazon ML Summer School 2025</span>
+              </>
             )}
             {project.slug === "decode" && (
               <span className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface px-5 text-sm text-muted">
