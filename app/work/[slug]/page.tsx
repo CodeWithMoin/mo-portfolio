@@ -103,6 +103,19 @@ export default async function ProjectPage({ params }: PageProps) {
           </div>
         </Reveal>
 
+        {project.slug === "amazon-applied-science" && (
+          <Reveal className="mt-8">
+            <blockquote className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+              <p className="text-pretty text-lg leading-8 text-foreground/85 sm:text-xl">
+                "I mentored Moin during his Amazon internship. He worked on using LLMs for taxonomy use cases, he is a remarkably quick learner who brings new ideas and executes them fast."
+              </p>
+              <footer className="mt-4 text-[15px] text-muted">
+                <span className="font-medium text-foreground/70">Manan Soni</span>, Applied Scientist II at Amazon · mentored Moin during the internship
+              </footer>
+            </blockquote>
+          </Reveal>
+        )}
+
         <Reveal className="mt-12">
           <ProjectVisual className="min-h-[430px] sm:min-h-[520px]" variant={project.visual} />
         </Reveal>
