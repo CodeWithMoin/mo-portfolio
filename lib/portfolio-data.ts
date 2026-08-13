@@ -130,7 +130,7 @@ export const projects: Project[] = [
     ],
     stack: ["Python", "LangGraph", "FastAPI", "PostgreSQL", "pgvector", "Redis"],
     visual: "attest",
-    links: [],
+    links: [{ label: "Source", href: "https://github.com/CodeWithMoin/attest" }],
     problem:
       "RAG systems can produce fluent answers whose citations do not actually support the claim being made. That makes a high-level answer score a poor proxy for whether a user can safely act on it.",
     why:
