@@ -287,6 +287,20 @@ export default function Home() {
         </Reveal>
       </section>
 
+      <section className="mx-auto max-w-[1180px] px-5 pb-4 sm:px-8 lg:px-10">
+        <Reveal>
+          <figure className="mx-auto max-w-3xl rounded-2xl border border-border bg-surface p-7 sm:p-10">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">From Amazon</p>
+            <blockquote className="mt-5 text-pretty text-2xl font-medium leading-[1.35] tracking-[-0.02em] sm:text-[1.75rem]">
+              "He worked on using LLMs for taxonomy use cases, he is a remarkably quick learner who brings new ideas and executes them fast."
+            </blockquote>
+            <figcaption className="mt-6 text-[15px] text-muted">
+              <span className="font-medium text-foreground/80">Manan Soni</span>, Applied Scientist II at Amazon · mentored Moin during the internship
+            </figcaption>
+          </figure>
+        </Reveal>
+      </section>
+
       <section className="mx-auto max-w-[1180px] px-5 py-20 sm:px-8 md:py-28 lg:px-10" id="research">
         <Reveal>
           <SectionHeading
