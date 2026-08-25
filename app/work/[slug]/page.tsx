@@ -49,7 +49,7 @@ function CaseSection({
           <span className="inline-flex rounded-full border border-border bg-white px-3 py-1 text-[13px] font-medium text-muted shadow-[0_1px_2px_rgba(13,13,12,0.05)]">{index}</span>
           <h2 className="mt-3 text-xl font-bold tracking-[-0.03em]">{title}</h2>
         </div>
-        <div>{children}</div>
+        <div className="min-w-0">{children}</div>
       </section>
     </Reveal>
   );
@@ -104,16 +104,28 @@ export default async function ProjectPage({ params }: PageProps) {
         </Reveal>
 
         {project.slug === "amazon-applied-science" && (
-          <Reveal className="mt-8">
-            <blockquote className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
-              <p className="text-pretty text-lg leading-8 text-foreground/85 sm:text-xl">
-                "I mentored Moin during his Amazon internship. He worked on using LLMs for taxonomy use cases, he is a remarkably quick learner who brings new ideas and executes them fast."
-              </p>
-              <footer className="mt-4 text-[15px] text-muted">
-                <span className="font-medium text-foreground/70">Manan Soni</span>, Applied Scientist II at Amazon · mentored Moin during the internship
-              </footer>
-            </blockquote>
-          </Reveal>
+          <div className="mt-8 grid gap-5 lg:grid-cols-2">
+            <Reveal>
+              <blockquote className="h-full rounded-2xl border border-border bg-surface p-6 sm:p-8">
+                <p className="text-pretty text-lg leading-8 text-foreground/85 sm:text-xl">
+                  "I mentored Moin during his Amazon internship. He worked on using LLMs for taxonomy use cases, he is a remarkably quick learner who brings new ideas and executes them fast."
+                </p>
+                <footer className="mt-4 text-[15px] text-muted">
+                  <span className="font-medium text-foreground/70">Manan Soni</span>, Applied Scientist II at Amazon · mentored Moin during the internship
+                </footer>
+              </blockquote>
+            </Reveal>
+            <Reveal delay={0.05}>
+              <blockquote className="h-full rounded-2xl border border-border bg-surface p-6 sm:p-8">
+                <p className="text-pretty text-lg leading-8 text-foreground/85 sm:text-xl">
+                  "I had the pleasure of working with Moin during his internship. His passion for solving complex problems stood out from day one. He took on a genuinely challenging project and delivered real impact, backing every decision with thoughtful, well-run experiments. Any team would be lucky to have someone with his curiosity, ownership, and drive to dive deep, invent, and simplify."
+                </p>
+                <footer className="mt-4 text-[15px] text-muted">
+                  <a className="font-medium text-foreground/70 transition hover:text-accent" href="https://www.linkedin.com/in/sachin-giroh-154a57a5/" rel="noreferrer" target="_blank">Sachin Giroh</a>, Applied Scientist · worked with Moin on the same team at Amazon
+                </footer>
+              </blockquote>
+            </Reveal>
+          </div>
         )}
 
         <Reveal className="mt-12">

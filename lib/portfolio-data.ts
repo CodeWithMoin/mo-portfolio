@@ -9,7 +9,7 @@ export type Project = {
   role: string;
   metrics: { value: string; label: string }[];
   stack: string[];
-  visual: "retrieval" | "taxonomy" | "research" | "edge" | "attest" | "decode";
+  visual: "retrieval" | "taxonomy" | "research" | "edge" | "attest" | "decode" | "audio";
   links: { label: string; href: string }[];
   problem: string;
   why: string;
@@ -202,91 +202,177 @@ export const projects: Project[] = [
     slug: "decode",
     index: "03",
     title: "Decode",
-    eyebrow: "AI-native production studio · Building",
+    eyebrow: "Agentic educational video generation · Building",
     year: "2026",
     summary:
-      "An AI-native production studio that turns research papers and documentation into educational videos—built as a workspace to direct, not a prompt box to wait on.",
+      "An AI-native system that turns natural-language concepts into explainable educational videos through specialized planning, teaching, scripting, motion, voice, and rendering agents.",
     thesis:
-      "Decode should never feel like a chatbot. Eight departments generate, evaluate, and revise their own work against versioned artifacts, so a person can inspect, edit, or regenerate any single piece without re-running the whole project.",
-    role: "Builder · Orchestration, artifact contracts, and evaluation loops",
+      "LLMs are useful for deciding what a lesson should show, but unreliable at low-level visual geometry. Decode separates semantic generation from deterministic visual execution.",
+    role: "Builder · Multi-agent orchestration, visual execution, artifact lineage, and evaluation loops",
     metrics: [
-      { value: "8", label: "departments, one orchestrator" },
-      { value: "3-step", label: "generate / evaluate / revise loop" },
-      { value: "SSE", label: "resumable execution stream" },
+      { value: "Agents", label: "specialized roles, centrally orchestrated" },
+      { value: "DAG", label: "incremental regeneration" },
+      { value: "API", label: "deterministic visual primitives" },
     ],
-    stack: ["Python", "FastAPI", "Redis", "ARQ", "PostgreSQL", "SSE"],
+    stack: ["Python", "FastAPI", "React", "Remotion", "Redis", "PostgreSQL"],
     visual: "decode",
     links: [],
     problem:
-      "Turning a research paper into a good educational video is a production job—structuring the argument, writing narration, planning visuals, timing them against voice—not a single generation step. Most AI tools compress that into one prompt and one output, which means no draft is inspectable and no single scene can be fixed without redoing everything around it.",
+      "A prompt such as “Explain backpropagation” requires more than a script. The system has to choose a teaching sequence, decide what appears on screen, lay out every component, synchronize narration and motion, and render a coherent video. Direct LLM-generated layouts repeatedly produced collisions, off-frame elements, incorrect coordinates, unpredictable text overflow, and poorly coordinated animation timing; repeated retries consumed tokens without fixing the underlying spatial reasoning problem.",
     why:
-      "The goal is software that feels like directing a production team, not typing into a chat box. Every department—Intake, Architect, Author, Visualizer, Renderer, Composer, Reviewer, Publisher—owns one responsibility, exposes what it received and produced, and hands off through a versioned artifact rather than a hidden internal state.",
+      "The useful separation is semantic versus geometric. Specialized agents can decide what to teach and what the viewer should see; a deterministic visual layer must decide where elements fit, whether they collide, how much room text needs, and when each word and animation should appear.",
     architecture: [
-      "Production brief",
+      "Natural-language concept",
+      "Orchestrator",
+      "Production plan",
       "Teaching plan",
-      "Scene script",
-      "Visual specification",
-      "Rendered assets",
-      "Timeline",
-      "Review report",
+      "Script + motion + voice",
+      "Visual component API",
+      "Validation + correction",
+      "Renderer",
     ],
     architectureNote:
-      "One Project Manager routes artifacts between departments; departments never call each other directly. Each department receives only the context it needs—the Renderer never sees the source paper—and runs its own generate/evaluate/revise loop before publishing, escalating to a human rather than retrying silently past a set budget.",
+      "The Orchestrator coordinates the Production Plan Generator, Teaching Plan Generator, Script Writer, Motion Designer, Voice, and Renderer. Versioned artifacts connect the stages. Content hashes and a dependency graph identify what changed, while the visual execution layer turns constrained primitives into validated coordinates, timing, and rendered scenes.",
     challenges: [
       {
-        title: "Keeping departments isolated",
+        title: "Converting intent into valid geometry",
         detail:
-          "Context is scoped per department by design: the Reviewer never touches the original PDF, the Renderer never sees the full paper. Smaller context cuts token cost, latency, and hallucination surface.",
+          "The visual component API owns coordinate transforms, collision and boundary detection, text bounding boxes, required text space, and frame-safe placement. The model selects constrained primitives instead of emitting arbitrary coordinates.",
       },
       {
-        title: "Regenerating without restarting",
+        title: "Coordinating speech and motion",
         detail:
-          "Artifacts are versioned against their parents, so changing one scene's script only invalidates that scene's downstream visuals and timeline—not the rest of the project.",
+          "Word-level timing aligns narration, on-screen text, and animation cues. Validation catches timing conflicts before a scene reaches the renderer.",
       },
       {
-        title: "Bounding agent autonomy",
+        title: "Correcting invalid scenes without restarting",
         detail:
-          "Each department's evaluate/revise loop runs inside a fixed retry budget. Exceeding it escalates to a human instead of continuing silently.",
+          "Visual self-checks and bounded correction loops repair invalid specifications. Artifact lineage and content-hash caching regenerate only affected downstream work.",
       },
     ],
     tradeoffs: [
       {
-        decision: "Artifact handoffs over direct department-to-department calls",
-        rationale: "Routing everything through the Project Manager keeps each department replaceable and every handoff inspectable.",
+        decision: "Constrained primitives over free-form layout generation",
+        rationale: "The API narrows visual freedom, but makes geometry testable and prevents a large class of collisions, overflow, and boundary failures.",
       },
       {
-        decision: "Bounded loops over autonomous recursion",
-        rationale: "Each department can generate, evaluate, and revise within a known budget before escalating to a human.",
+        decision: "Semantic agents over one end-to-end prompt",
+        rationale: "Separate planning, teaching, scripting, motion, voice, and rendering artifacts expose intermediate decisions and allow one stage to be corrected independently.",
       },
       {
-        decision: "PostgreSQL and Redis over a new orchestration platform",
-        rationale: "Durable, well-understood primitives while the department contracts are still evolving.",
+        decision: "Incremental DAG execution over full regeneration",
+        rationale: "Content hashes add bookkeeping, but prevent an edit to one scene from forcing unrelated work through the pipeline again.",
       },
     ],
     experiments: [
-      "Exercised generate/evaluate/revise loops per department with bounded retries and explicit human escalation.",
-      "Regenerated downstream artifacts after changing a single upstream artifact.",
-      "Interrupted workers and SSE connections to validate recovery and resume behavior.",
+      "Tried unconstrained prompting and prompting the model to compose with Three.js and GSAP; access to better libraries did not make low-level layout reasoning reliable.",
+      "Compared free-form visual specifications with constrained visual primitives, boundary checks, and deterministic validation.",
+      "Changed upstream artifacts and verified that content hashes invalidate only dependent downstream work.",
     ],
     results: [
-      "Working orchestration across all eight departments, coordinated through one Project Manager.",
-      "Evaluation loops (generate → evaluate → revise → approve) running per department with bounded retries.",
-      "The research-paper-to-video pipeline itself—Author through Publisher producing a finished video—is still being built.",
+      "Built a multi-agent product that turns natural-language questions into explainable educational video workflows.",
+      "Implemented a deterministic visual component API for layout, collision, boundaries, text measurement, word timing, and animation coordination.",
+      "Added visual validation, self-correction, DAG-based artifact lineage, and content-hash caching for incremental regeneration.",
     ],
     lessons: [
-      "Agent autonomy needs a durable contract with the rest of the system, not just a capable model.",
-      "Context isolation is a reliability feature, not just a cost optimization.",
-      "A recoverable, inspectable workflow is worth more early than a flashier but opaque end-to-end demo.",
+      "LLMs are better at deciding what should be shown than reasoning directly about low-level visual geometry.",
+      "Validation is part of generation when outputs must satisfy spatial and temporal constraints.",
+      "Artifact lineage is useful when it enables selective repair, not merely observability.",
     ],
     future: [
-      "Ship the full paper-to-video pipeline end to end.",
-      "Extend beyond video to interactive lessons, quizzes, flashcards, and podcasts from the same artifact graph.",
-      "Add operator views for artifact diffs, cost tracking, and dependency invalidation.",
+      "Add a validated extension path for visual primitives that the component library does not yet provide.",
+      "Build a repeatable evaluation set for visual composition and timing failures.",
+      "Add operator views for artifact diffs, invalidation, and correction history.",
+    ],
+  },
+  {
+    slug: "smart-turn",
+    index: "04",
+    title: "Smart Turn",
+    eyebrow: "Audio intelligence · Voice agents",
+    year: "2026",
+    summary:
+      "A lightweight speech turn-completion detector built from the Whisper-tiny encoder for low-latency voice-agent handoffs in Hindi and English.",
+    thesis:
+      "A voice agent should respond when a person has finished a thought—not simply when the waveform becomes quiet.",
+    role: "Builder · Model adaptation, bilingual evaluation, and ONNX inference",
+    metrics: [
+      { value: "93.9%", label: "Hindi accuracy" },
+      { value: "93.7%", label: "English accuracy" },
+      { value: "~38ms", label: "per clip on CPU" },
+    ],
+    stack: ["PyTorch", "Whisper-tiny", "Transformers", "ONNX", "Python"],
+    visual: "audio",
+    links: [],
+    problem:
+      "Silence alone is an unreliable handoff signal for voice agents. People pause mid-thought, speak at different rates, and use language-specific phrasing that can make a fixed timeout either interrupt too early or respond too late.",
+    why:
+      "Turn completion sits directly on the interaction loop. A small, bilingual model that runs quickly on CPU can improve responsiveness without adding another remote inference dependency.",
+    architecture: [
+      "8-second audio context",
+      "Whisper-tiny encoder",
+      "Attention pooling",
+      "Classification head",
+      "Single ONNX graph",
+      "Turn decision",
+    ],
+    architectureNote:
+      "The model reuses Whisper-tiny's speech representation, aggregates variable acoustic context with attention pooling, and emits a turn-completion decision through a lightweight classification head. The complete path is exported as one ONNX graph for CPU inference.",
+    challenges: [
+      {
+        title: "Recognizing intent beyond silence",
+        detail:
+          "The classifier uses encoded speech context rather than a fixed pause threshold, allowing it to distinguish a completed utterance from a hesitation.",
+      },
+      {
+        title: "Holding quality across languages",
+        detail:
+          "Hindi and English are evaluated separately so aggregate accuracy cannot hide language-specific regressions.",
+      },
+      {
+        title: "Keeping the interaction loop fast",
+        detail:
+          "A compact Whisper-tiny backbone and single ONNX export keep inference local and predictable on CPU.",
+      },
+    ],
+    tradeoffs: [
+      {
+        decision: "Whisper-tiny over a larger speech encoder",
+        rationale: "Turn detection needs useful representations at interaction latency; a larger backbone would increase the cost of every conversational handoff.",
+      },
+      {
+        decision: "Eight-second context window",
+        rationale: "The window preserves enough recent speech structure for a completion decision while bounding inference work.",
+      },
+      {
+        decision: "Single ONNX graph over a multi-stage runtime",
+        rationale: "One deployable graph reduces serving overhead and keeps preprocessing-to-decision latency easier to measure.",
+      },
+    ],
+    experiments: [
+      "Evaluated turn-completion accuracy independently on Hindi and English clips.",
+      "Measured CPU latency on the exported eight-second-context ONNX model.",
+      "Validated the encoder, attention pooling, and classification head as one inference graph.",
+    ],
+    results: [
+      "Reached 93.9% accuracy on Hindi and 93.7% on English.",
+      "Achieved approximately 38ms inference per clip on CPU.",
+      "Exported the full turn-detection path as a single ONNX graph.",
+    ],
+    lessons: [
+      "Conversational latency depends on deciding when to listen as much as how fast the response model runs.",
+      "Per-language evaluation is necessary for a bilingual interaction model.",
+      "A compact pretrained encoder can be adapted to a narrow product decision without carrying a full transcription pipeline.",
+    ],
+    future: [
+      "Evaluate noisier environments, accents, and longer conversational pauses.",
+      "Measure false interruption and delayed-response costs in a live voice-agent loop.",
+      "Calibrate confidence thresholds for different interaction styles.",
     ],
   },
   {
     slug: "amazon-applied-science",
-    index: "04",
+    index: "05",
     title: "Autonomous Taxonomy Systems at Amazon",
     eyebrow: "Applied science · Public summary",
     year: "2026",
@@ -380,7 +466,7 @@ export const projects: Project[] = [
   },
   {
     slug: "taxonomy-evaluation-research",
-    index: "05",
+    index: "06",
     title: "Evaluation for Taxonomies at Scale",
     eyebrow: "Research · UAM + LUMEN",
     year: "2026",
@@ -391,7 +477,7 @@ export const projects: Project[] = [
     role: "First author, UAM · Third author, LUMEN",
     metrics: [
       { value: "621–5K", label: "category scale studied" },
-      { value: "25×", label: "lower reported cost" },
+      { value: "Up to 99%", label: "lower cost than Sonnet 4.5" },
       { value: "2", label: "2026 submissions" },
     ],
     stack: ["LLM evaluation", "NLP", "Hierarchical clustering", "Classification", "Experiment design"],
@@ -410,7 +496,7 @@ export const projects: Project[] = [
       "Human-readable finding",
     ],
     architectureNote:
-      "UAM focuses on evaluating generated hierarchical structure and surfacing duplication. LUMEN studies robust classification across taxonomy scales from 621 to 5,000 categories.",
+      "UAM focuses on evaluating generated hierarchical structure and surfacing duplication. My LUMEN contribution focused on scaling taxonomies up and down and evaluating how classification quality, hallucination, and cost change as the label space grows.",
     challenges: [
       {
         title: "Measuring hierarchy, not just labels",
@@ -418,7 +504,7 @@ export const projects: Project[] = [
       },
       {
         title: "Holding comparisons fair",
-        detail: "Evaluated systems across a wide category range so model quality and cost could be compared under increasing complexity.",
+        detail: "Contributed taxonomy-scaling experiments from 621 to 5,000 Clothing categories while keeping the input domain fixed, then compared quality and inference cost under increasing label-space complexity.",
       },
       {
         title: "Turning anomalies into findings",
@@ -441,13 +527,14 @@ export const projects: Project[] = [
     ],
     experiments: [
       "Compared hierarchy evaluation behavior across generated and human-constructed structures.",
-      "Swept classification scale from 621 to 5,000 categories.",
-      "Tracked model quality together with inference cost rather than optimizing either in isolation.",
+      "Contributed taxonomy-size sweeps that expanded the Clothing label space from 621 to 5,000 categories.",
+      "Compared LUMEN with Claude Sonnet 4.5 and Qwen baselines while tracking F1, hallucination, and inference cost.",
     ],
     results: [
       "UAM identified a previously hidden duplication failure mode in human-built structures.",
-      "LUMEN matched a frontier model's reported accuracy at 25× lower cost across the studied scales.",
-      "The work produced two 2026 submissions: UAM as first author and LUMEN as third author.",
+      "On Clothing, LUMEN reached 90.3 F1 versus Sonnet 4.5's 90.8 at the original taxonomy, with roughly 96% lower inference cost.",
+      "At 5,000 categories, LUMEN reached 89.6 F1 versus Sonnet 4.5's 89.4, with roughly 99% lower inference cost.",
+      "UAM is an AMLC 2026 submission with me as first author; LUMEN is an EMNLP 2026 submission with me as third author.",
     ],
     lessons: [
       "Human-authored structure is a baseline, not ground truth beyond inspection.",
@@ -462,7 +549,7 @@ export const projects: Project[] = [
   },
   {
     slug: "ecoguardian-ai",
-    index: "06",
+    index: "07",
     title: "EcoGuardian AI",
     eyebrow: "On-device applied ML",
     year: "2025",
@@ -555,11 +642,11 @@ export const publications = [
   },
   {
     title: "LUMEN: Robust LLM Classification Across Taxonomy Scales",
-    venue: "AMLC + EMNLP · 2026",
+    venue: "EMNLP · 2026",
     role: "Third author",
     status: "Submitted",
     abstract:
-      "A scale-aware classification study spanning 621 to 5,000 categories, matching a frontier model's reported accuracy at 25× lower cost.",
+      "A scale-aware classification study spanning 150 to 5,000 labels. I contributed the taxonomy-scaling experiments; on Clothing, LUMEN maintained Claude-competitive F1 at up to 99% lower inference cost than Sonnet 4.5.",
   },
 ];
 
@@ -588,19 +675,32 @@ export const interests = [
     title: "Backend Engineering",
     detail: "Versioned APIs, data contracts, authentication, lifecycle design, and production safety.",
   },
-  {
-    title: "Applied Machine Learning",
-    detail: "Problem framing, baselines, efficient inference, on-device deployment, and product feedback loops.",
-  },
 ];
 
 export const repositories = [
+  {
+    name: "Decode",
+    description: "Multi-agent educational video generation with constrained visual primitives, validation loops, and incremental regeneration.",
+    language: "Python + TypeScript",
+    license: "Case study",
+    href: "/work/decode",
+    external: false,
+  },
+  {
+    name: "Smart Turn",
+    description: "Bilingual speech turn-completion detection using Whisper-tiny, attention pooling, and low-latency ONNX inference.",
+    language: "Python + ONNX",
+    license: "Case study",
+    href: "/work/smart-turn",
+    external: false,
+  },
   {
     name: "doculens-ai",
     description: "Citation-first RAG, semantic search, and grounded QA for operational documents.",
     language: "TypeScript + Python",
     license: "MIT",
     href: "https://github.com/CodeWithMoin/doculens-ai",
+    external: true,
   },
   {
     name: "attest",
@@ -608,6 +708,7 @@ export const repositories = [
     language: "Python",
     license: "MIT",
     href: "https://github.com/CodeWithMoin/attest",
+    external: true,
   },
   {
     name: "EcoGuardian-AI",
@@ -615,6 +716,7 @@ export const repositories = [
     language: "TypeScript",
     license: "MIT",
     href: "https://github.com/CodeWithMoin/EcoGuardian-AI",
+    external: true,
   },
 ];
 

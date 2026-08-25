@@ -16,7 +16,7 @@ const experience = [
     period: "Jan–Jun 2026",
     location: "Bengaluru",
     impact:
-      "Owned a self-calibrating knowledge-extraction system from problem framing to production, then expanded into autonomous taxonomy generation and grounded metric explainability. Cut onboarding from five to seven days to under 18 hours, reached 0.74 F1 against a 0.71 manual baseline, and accelerated extraction 2.7× at 53% lower cost.",
+      "Built a hybrid ML/LLM pipeline over millions of customer-feedback records, reaching 0.74 F1 against a 0.71 manual scientist baseline. Built an explainable evaluation framework adopted by 12 business teams and reduced new-business onboarding from five to seven days to under 18 hours.",
   },
   {
     company: "Intel · Unnati",
@@ -288,8 +288,9 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-[1180px] px-5 pb-4 sm:px-8 lg:px-10">
-        <Reveal>
-          <figure className="mx-auto max-w-3xl rounded-2xl border border-border bg-surface p-7 sm:p-10">
+        <div className="grid gap-5 lg:grid-cols-2">
+          <Reveal>
+            <figure className="h-full rounded-2xl border border-border bg-surface p-7 sm:p-10">
             <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">From Amazon</p>
             <blockquote className="mt-5 text-pretty text-2xl font-medium leading-[1.35] tracking-[-0.02em] sm:text-[1.75rem]">
               "He worked on using LLMs for taxonomy use cases, he is a remarkably quick learner who brings new ideas and executes them fast."
@@ -297,8 +298,20 @@ export default function Home() {
             <figcaption className="mt-6 text-[15px] text-muted">
               <span className="font-medium text-foreground/80">Manan Soni</span>, Applied Scientist II at Amazon · mentored Moin during the internship
             </figcaption>
-          </figure>
-        </Reveal>
+            </figure>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <figure className="h-full rounded-2xl border border-border bg-surface p-7 sm:p-10">
+              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted">From Amazon</p>
+              <blockquote className="mt-5 text-pretty text-2xl font-medium leading-[1.35] tracking-[-0.02em] sm:text-[1.75rem]">
+                "His passion for solving complex problems stood out from day one. He took on a genuinely challenging project and delivered real impact, backing every decision with thoughtful, well-run experiments."
+              </blockquote>
+              <figcaption className="mt-6 text-[15px] text-muted">
+                <a className="font-medium text-foreground/80 transition hover:text-accent" href="https://www.linkedin.com/in/sachin-giroh-154a57a5/" rel="noreferrer" target="_blank">Sachin Giroh</a>, Applied Scientist · worked with Moin on the same team at Amazon
+              </figcaption>
+            </figure>
+          </Reveal>
+        </div>
       </section>
 
       <section className="mx-auto max-w-[1180px] px-5 py-20 sm:px-8 md:py-28 lg:px-10" id="research">
@@ -479,7 +492,7 @@ export default function Home() {
               <p className="mt-8 text-[15px] leading-6 text-muted">{interest.detail}</p>
             </Card>
           ))}
-          <Card className="flex min-h-52 flex-col p-5 sm:col-span-2 sm:p-6">
+          <Card className="flex min-h-52 flex-col p-5 sm:col-span-2 sm:p-6 lg:col-span-3">
             <span className="inline-flex items-center gap-2 self-start rounded-full bg-accent/10 px-3.5 py-2 text-[13px] font-medium text-accent">
               <span className="relative flex size-1.5">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-60" />
@@ -498,7 +511,7 @@ export default function Home() {
           <SectionHeading
             eyebrow="Open source"
             title="The implementation is part of the argument."
-            description="Public repositories include product code, typed APIs, tests, CI, deployment notes, and explicit limitations—not only screenshots."
+            description="The latest systems are documented as engineering case studies; public repositories include product code, typed APIs, tests, CI, deployment notes, and explicit limitations—not only screenshots."
           />
         </Reveal>
         <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr]">
@@ -508,7 +521,7 @@ export default function Home() {
             <p className="mt-2 text-base text-muted">public repositories</p>
             <div className="mt-10 space-y-4 border-t border-border pt-5 text-[15px]">
               <div className="flex items-center justify-between gap-4"><span className="text-muted">Stars</span><span className="font-medium">15</span></div>
-              <div className="flex items-center justify-between gap-4"><span className="text-muted">Latest focus</span><span className="font-medium">DocuLens AI</span></div>
+              <div className="flex items-center justify-between gap-4"><span className="text-muted">Latest focus</span><span className="font-medium">Decode · Smart Turn</span></div>
               <div className="flex items-center justify-between gap-4"><span className="text-muted">Languages</span><span className="font-medium">Python · TypeScript</span></div>
               <div className="flex items-center justify-between gap-4"><span className="text-muted">Licenses</span><span className="font-medium">MIT</span></div>
             </div>
@@ -518,7 +531,7 @@ export default function Home() {
           </Card>
           <div className="space-y-3">
             {repositories.map((repository) => (
-              <a className="group block" href={repository.href} key={repository.name} rel="noreferrer" target="_blank">
+              <Link className="group block" href={repository.href} key={repository.name} rel={repository.external ? "noreferrer" : undefined} target={repository.external ? "_blank" : undefined}>
                 <Card className="grid gap-5 p-6 transition hover:border-foreground/15 sm:grid-cols-[1fr_auto] sm:items-center">
                   <div>
                     <h3 className="text-xl font-bold tracking-[-0.03em] transition group-hover:text-accent">{repository.name}</h3>
@@ -529,7 +542,7 @@ export default function Home() {
                     <span className="rounded-full bg-surface-raised px-3 py-1.5">{repository.license}</span>
                   </div>
                 </Card>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -570,13 +583,14 @@ export default function Home() {
             </h2>
             <div className="lg:text-right">
               <a className="text-lg font-medium transition hover:text-accent" href="mailto:hello@moinuddin.app">hello@moinuddin.app ↗</a>
-              <p className="mt-3 text-sm leading-6 text-muted">Available for applied science, ML systems, and early-stage AI product teams.</p>
+              <p className="mt-3 text-sm leading-6 text-muted">Open to Applied Scientist, ML Systems, and early-stage AI engineering roles.</p>
               <div className="mt-6 flex items-center gap-3 lg:justify-end">
-                <span className="relative inline-flex size-11 shrink-0 overflow-hidden rounded-full">
+                <span className="relative inline-flex h-14 w-20 shrink-0 overflow-hidden rounded-xl border border-border bg-surface-raised">
                   <Image
                     alt="Map of Hyderabad, India"
-                    className="size-full object-cover grayscale contrast-[1.12]"
+                    className="size-full object-cover contrast-[1.04] saturate-[0.8]"
                     height={750}
+                    sizes="80px"
                     src="/hyderabad-map.jpg"
                     width={1000}
                   />

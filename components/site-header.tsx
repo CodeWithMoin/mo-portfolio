@@ -32,6 +32,7 @@ export function SiteHeader() {
                 alt="Moinuddin Shaik"
                 className="size-9 rounded-[0.85rem] object-cover grayscale"
                 height={512}
+                priority
                 src="/moinuddin.jpg"
                 width={512}
               />

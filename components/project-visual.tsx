@@ -4,7 +4,7 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
 import { useRef } from "react";
 import { cn } from "@/lib/cn";
 
-type VisualVariant = "retrieval" | "taxonomy" | "research" | "edge" | "attest" | "decode";
+type VisualVariant = "retrieval" | "taxonomy" | "research" | "edge" | "attest" | "decode" | "audio";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
@@ -25,7 +25,7 @@ export function ProjectVisual({ variant, className }: { variant: VisualVariant; 
         <div className="absolute inset-x-0 top-0 z-20 flex h-11 items-center justify-between border-b border-[#d9dce2] bg-[#eff1f5] px-4 font-mono text-[9px] uppercase tracking-[0.18em] text-[#6b707c]">
           <div className="flex items-center gap-3">
             <span className="flex gap-1.5" aria-hidden="true"><i className="size-1.5 rounded-full bg-[#c9ccd3]" /><i className="size-1.5 rounded-full bg-[#c9ccd3]" /><i className="size-1.5 rounded-full bg-[#c9ccd3]" /></span>
-          <span>{variant === "edge" ? "Edge runtime" : variant === "research" ? "Evaluation bench" : variant === "taxonomy" ? "Structure workspace" : variant === "attest" ? "Verification bench" : variant === "decode" ? "Workflow control" : "Private workspace"}</span>
+          <span>{variant === "edge" ? "Edge runtime" : variant === "research" ? "Evaluation bench" : variant === "taxonomy" ? "Structure workspace" : variant === "attest" ? "Verification bench" : variant === "decode" ? "Visual execution" : variant === "audio" ? "Turn detector" : "Private workspace"}</span>
           </div>
           <span className="flex items-center gap-1.5 normal-case tracking-normal"><i className="size-1.5 rounded-full bg-[#149b6f]" /> Verified</span>
         </div>
@@ -35,6 +35,7 @@ export function ProjectVisual({ variant, className }: { variant: VisualVariant; 
         {variant === "edge" && <EdgeVisual show={show} />}
         {variant === "attest" && <AttestVisual show={show} />}
         {variant === "decode" && <DecodeVisual show={show} />}
+        {variant === "audio" && <AudioVisual show={show} />}
       </div>
     </div>
   );
@@ -106,13 +107,13 @@ function ResearchVisual({ show }: { show: boolean }) {
         <div className="mt-3 flex justify-between font-mono text-[8px] text-[#7b808b]"><span>621</span><span>Taxonomy scale</span><span>5k</span></div>
       </div>
       <div className="flex flex-col justify-center gap-2">
-        {[["Semantic quality", ".83"], ["Boundary ambiguity", ".71"], ["Hierarchy utility", ".64"]].map(([label, score], index) => (
+        {[["Original F1", "90.3 / 90.8"], ["5K-node F1", "89.6 / 89.4"]].map(([label, score], index) => (
           <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : 8 }} className="rounded-lg border border-[#deddd8] bg-[#fdfcf9] p-3" key={label} transition={{ delay: 0.25 + index * 0.1, duration: 0.48, ease }}>
-            <div className="flex items-center justify-between"><span className="text-[9px] font-medium">{label}</span><span className="font-mono text-[8px] text-[#c04315]">{score}</span></div>
-            <div className="mt-2 h-1 overflow-hidden rounded bg-[#e8e9ec]"><motion.div animate={{ scaleX: show ? 1 : 0 }} className="h-full origin-left rounded bg-[#ffab85]" style={{ width: `${83 - index * 11}%` }} transition={{ delay: 0.45 + index * 0.1, duration: 0.55, ease }} /></div>
+            <div className="flex items-center justify-between gap-2"><span className="text-[9px] font-medium">{label}</span><span className="font-mono text-[8px] text-[#c04315]">{score}</span></div>
+            <p className="mt-2 font-mono text-[7px] text-[#7b808b]">LUMEN / Sonnet 4.5</p>
           </motion.div>
         ))}
-        <motion.div animate={{ opacity: show ? 1 : 0, y: show ? 0 : 7 }} className="rounded-lg border border-[#f1cf69] bg-[#fff3c8] px-3 py-3 font-mono text-[8px] font-medium text-[#7a5300]" transition={{ delay: 0.7, duration: 0.48, ease }}>25× lower reported cost</motion.div>
+        <motion.div animate={{ opacity: show ? 1 : 0, y: show ? 0 : 7 }} className="rounded-lg border border-[#f1cf69] bg-[#fff3c8] px-3 py-3 font-mono text-[8px] font-medium text-[#7a5300]" transition={{ delay: 0.7, duration: 0.48, ease }}>Up to 99% lower inference cost</motion.div>
       </div>
     </div>
   );
@@ -159,21 +160,47 @@ function AttestVisual({ show }: { show: boolean }) {
 }
 
 function DecodeVisual({ show }: { show: boolean }) {
-  const departments = ["Architect", "Author", "Visualizer", "Renderer"];
+  const agents = ["Teaching plan", "Script", "Motion", "Voice"];
   return (
     <div className="product-grid flex h-full min-h-[320px] flex-col justify-center px-4 pb-4 pt-14 sm:px-6">
       <div className="rounded-xl border border-[#deddd8] bg-[#fdfcf9] p-4 shadow-sm">
-        <div className="flex items-center justify-between font-mono text-[8px] uppercase tracking-[0.15em] text-[#6b707c]"><span>Artifact lineage</span><span>Research paper → video</span></div>
+        <div className="flex items-center justify-between font-mono text-[8px] uppercase tracking-[0.15em] text-[#6b707c]"><span>Concept → video</span><span>Explain backpropagation</span></div>
         <div className="mt-4 grid grid-cols-[.8fr_auto_1.2fr] items-center gap-2">
-          <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : -8 }} className="rounded-lg border border-[#deddd8] bg-white p-3" transition={{ duration: 0.5, ease }}><p className="font-mono text-[8px] uppercase text-[#737986]">Input</p><p className="mt-2 text-[10px] font-medium">Production brief</p><p className="mt-1 font-mono text-[8px] text-[#6b707c]">v3 · from paper</p></motion.div>
+          <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : -8 }} className="rounded-lg border border-[#deddd8] bg-white p-3" transition={{ duration: 0.5, ease }}><p className="font-mono text-[8px] uppercase text-[#737986]">Orchestrator</p><p className="mt-2 text-[10px] font-medium">Production plan</p><p className="mt-1 font-mono text-[8px] text-[#6b707c]">artifact · v3</p></motion.div>
           <motion.div animate={{ opacity: show ? 1 : 0, scaleX: show ? 1 : 0 }} className="h-px w-6 origin-left bg-[#ffab85]" transition={{ delay: 0.24, duration: 0.4, ease }} />
-          <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : 8 }} className="rounded-lg border border-[#ffc2a8] bg-[#fff1ea] p-3" transition={{ delay: 0.3, duration: 0.5, ease }}><div className="flex items-center justify-between"><p className="font-mono text-[8px] uppercase text-[#c04315]">Departments</p><span className="text-[9px] text-[#149b6f]">● building</span></div><div className="mt-3 grid grid-cols-2 gap-2">{departments.map((department, index) => <motion.div animate={{ opacity: show ? 1 : 0, y: show ? 0 : 5 }} className="rounded-md border border-[#ffdccd] bg-white px-2 py-2 text-[9px]" key={department} transition={{ delay: 0.48 + index * 0.08, duration: 0.4, ease }}>{department}</motion.div>)}</div></motion.div>
+          <motion.div animate={{ opacity: show ? 1 : 0, x: show ? 0 : 8 }} className="rounded-lg border border-[#ffc2a8] bg-[#fff1ea] p-3" transition={{ delay: 0.3, duration: 0.5, ease }}><div className="flex items-center justify-between"><p className="font-mono text-[8px] uppercase text-[#c04315]">Specialized agents</p><span className="text-[9px] text-[#149b6f]">● building</span></div><div className="mt-3 grid grid-cols-2 gap-2">{agents.map((agent, index) => <motion.div animate={{ opacity: show ? 1 : 0, y: show ? 0 : 5 }} className="rounded-md border border-[#ffdccd] bg-white px-2 py-2 text-[9px]" key={agent} transition={{ delay: 0.48 + index * 0.08, duration: 0.4, ease }}>{agent}</motion.div>)}</div></motion.div>
         </div>
       </div>
       <motion.div animate={{ opacity: show ? 1 : 0, y: show ? 0 : 8 }} className="mt-3 grid grid-cols-3 gap-2 font-mono text-[8px]" transition={{ delay: 0.75, duration: 0.5, ease }}>
-        <div className="rounded-lg border border-[#deddd8] bg-[#fdfcf9] px-3 py-3"><span className="text-[#6b707c]">Departments</span><strong className="mt-1 block text-[11px] text-[#17191f]">8</strong></div>
-        <div className="rounded-lg border border-[#deddd8] bg-[#fdfcf9] px-3 py-3"><span className="text-[#6b707c]">Loop</span><strong className="mt-1 block text-[11px] text-[#149b6f]">3-step</strong></div>
-        <div className="rounded-lg border border-[#f1cf69] bg-[#fff3c8] px-3 py-3"><span className="text-[#8b5c00]">SSE</span><strong className="mt-1 block text-[11px] text-[#7a5300]">resumable</strong></div>
+        <div className="rounded-lg border border-[#deddd8] bg-[#fdfcf9] px-3 py-3"><span className="text-[#6b707c]">Geometry</span><strong className="mt-1 block text-[11px] text-[#17191f]">constrained</strong></div>
+        <div className="rounded-lg border border-[#deddd8] bg-[#fdfcf9] px-3 py-3"><span className="text-[#6b707c]">Scenes</span><strong className="mt-1 block text-[11px] text-[#149b6f]">validated</strong></div>
+        <div className="rounded-lg border border-[#f1cf69] bg-[#fff3c8] px-3 py-3"><span className="text-[#8b5c00]">Execution</span><strong className="mt-1 block text-[11px] text-[#7a5300]">DAG-based</strong></div>
+      </motion.div>
+    </div>
+  );
+}
+
+function AudioVisual({ show }: { show: boolean }) {
+  const waveform = [30, 54, 76, 45, 88, 62, 36, 70, 92, 58, 42, 24, 18, 12];
+  return (
+    <div className="product-grid flex h-full min-h-[320px] flex-col justify-center gap-3 px-4 pb-4 pt-14 sm:px-6">
+      <motion.div animate={{ opacity: show ? 1 : 0, y: show ? 0 : 10 }} className="rounded-xl border border-[#deddd8] bg-[#fdfcf9] p-4 shadow-sm" transition={{ duration: 0.55, ease }}>
+        <div className="flex items-center justify-between font-mono text-[8px] uppercase tracking-[0.15em] text-[#6b707c]"><span>8-second context</span><span>Whisper-tiny</span></div>
+        <div className="mt-5 flex h-24 items-center gap-1 rounded-lg border border-[#ffdccd] bg-[#fff8f4] px-3">
+          {waveform.map((height, index) => (
+            <motion.span animate={{ scaleY: show ? 1 : 0.08 }} className={cn("flex-1 origin-center rounded-full", index > 10 ? "bg-[#d9dce2]" : "bg-[#ff7b47]")} key={`${height}-${index}`} style={{ height: `${height}%` }} transition={{ delay: index * 0.035, duration: 0.45, ease }} />
+          ))}
+        </div>
+        <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-center font-mono text-[8px]">
+          <div className="rounded-lg border border-[#deddd8] bg-white px-3 py-3"><span className="text-[#6b707c]">Attention pooling</span></div>
+          <span className="text-[#c04315]">→</span>
+          <div className="rounded-lg border border-[#ffc2a8] bg-[#fff1ea] px-3 py-3 text-[#c04315]">Turn complete</div>
+        </div>
+      </motion.div>
+      <motion.div animate={{ opacity: show ? 1 : 0, y: show ? 0 : 8 }} className="grid grid-cols-3 gap-2 font-mono text-[8px]" transition={{ delay: 0.6, duration: 0.5, ease }}>
+        <div className="rounded-lg border border-[#deddd8] bg-[#fdfcf9] px-3 py-3"><span className="text-[#6b707c]">Hindi</span><strong className="mt-1 block text-[11px] text-[#17191f]">93.9%</strong></div>
+        <div className="rounded-lg border border-[#deddd8] bg-[#fdfcf9] px-3 py-3"><span className="text-[#6b707c]">English</span><strong className="mt-1 block text-[11px] text-[#17191f]">93.7%</strong></div>
+        <div className="rounded-lg border border-[#f1cf69] bg-[#fff3c8] px-3 py-3"><span className="text-[#8b5c00]">CPU</span><strong className="mt-1 block text-[11px] text-[#7a5300]">~38ms</strong></div>
       </motion.div>
     </div>
   );

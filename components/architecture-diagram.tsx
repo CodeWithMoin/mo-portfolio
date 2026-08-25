@@ -1,7 +1,7 @@
 export function ArchitectureDiagram({ nodes, note }: { nodes: string[]; note?: string }) {
   return (
-    <figure className="rounded-[1.5rem] border border-border bg-grid p-5 sm:p-8">
-      <div className="overflow-x-auto pb-2">
+    <figure className="min-w-0 max-w-full rounded-[1.5rem] border border-border bg-grid p-5 sm:p-8">
+      <div className="w-full overflow-x-auto pb-2">
         <ol className="flex min-w-max items-center gap-2" aria-label="System architecture flow">
           {nodes.map((node, index) => (
             <li className="flex items-center gap-2" key={node}>

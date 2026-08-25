@@ -19,6 +19,7 @@ The site is designed around technical evidence rather than a traditional skills-
 - **DocuLens AI** — citation-first document intelligence and grounded retrieval.
 - **Attest** — self-verifying agentic RAG with claim-level evidence checks.
 - **Decode** — multi-agent workflows with artifact lineage and recoverable execution.
+- **Smart Turn** — bilingual, low-latency speech turn detection for voice agents.
 - **Autonomous Taxonomy Systems at Amazon** — a public-safe summary of self-calibrating extraction, taxonomy induction, and explainability work.
 - **Evaluation for Taxonomies at Scale** — research on hierarchical quality and classification across large label spaces.
 - **EcoGuardian AI** — fast, offline waste classification for resource-constrained devices.
