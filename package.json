@@ -6,13 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check": "tsx scripts/check-content.mts",
+    "corpus": "tsx scripts/build-corpus.mts",
+    "prebuild": "tsx scripts/build-corpus.mts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.127.0",
     "framer-motion": "^11.18.2",
     "next": "15.5.20",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "simple-icons": "^16.31.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
@@ -23,6 +28,7 @@
     "eslint-config-next": "^15.3.5",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
 }

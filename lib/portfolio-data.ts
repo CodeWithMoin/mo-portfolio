@@ -9,12 +9,39 @@ export type Project = {
   role: string;
   metrics: { value: string; label: string }[];
   stack: string[];
-  visual: "retrieval" | "taxonomy" | "research" | "edge" | "attest" | "decode" | "audio";
+  /** A bespoke animated visual. Optional: without one, the architecture pipeline is drawn instead. */
+  visual?: "retrieval" | "taxonomy" | "research" | "edge" | "attest" | "decode" | "audio";
+  /**
+   * A real screenshot of the running project. When present it replaces the generated
+   * `visual` on cards — a screenshot of the actual thing beats an illustration of it.
+   * Drop the file in public/work/<slug>/ and point at it here.
+   */
+  thumbnail?: {
+    src: string;
+    alt: string;
+    /** A second view, cross-faded in on hover. */
+    hoverSrc?: string;
+    /** Where to anchor the crop. UI screenshots read from the top; a centred diagram does not. */
+    position?: "top" | "center";
+  };
+  /** Context pills beside the case-study links. `live` adds a pulsing indicator. */
+  badges?: { label: string; live?: boolean }[];
+  /** Screenshots of the running product, shown as their own case-study section. */
+  screenshots?: { src: string; alt: string; feature?: boolean }[];
+  /** Heading for that section. Defaults to "Product surface"; research work shows figures, not UI. */
+  screenshotsTitle?: string;
   links: { label: string; href: string }[];
   problem: string;
   why: string;
   architecture: string[];
   architectureNote: string;
+  /**
+   * Per-stage detail for the interactive pipeline, keyed by the exact stage name in
+   * `architecture`. Optional: without it a stage still shows what it receives and
+   * hands on, derived from its position. Every entry restates something already in
+   * this project's own problem / why / architectureNote / results.
+   */
+  stageDetails?: Record<string, { role?: string; note?: string }>;
   challenges: { title: string; detail: string }[];
   tradeoffs: { decision: string; rationale: string }[];
   experiments: string[];
@@ -42,6 +69,16 @@ export const projects: Project[] = [
     ],
     stack: ["FastAPI", "React 19", "PostgreSQL", "pgvector", "Celery", "Redis", "Docling"],
     visual: "retrieval",
+    thumbnail: {
+      src: "/work/doculens/workspace.jpg",
+      alt: "DocuLens AI workspace: an ingested document beside its retrieved, cited passages",
+      hoverSrc: "/work/doculens/qa-studio.jpg",
+    },
+    screenshots: [
+      { src: "/work/doculens/workspace.jpg", alt: "DocuLens AI workspace showing document intelligence workflows", feature: true },
+      { src: "/work/doculens/landing.jpg", alt: "DocuLens AI landing page" },
+      { src: "/work/doculens/qa-studio.jpg", alt: "DocuLens AI evidence-first question answering studio" },
+    ],
     links: [
       { label: "Source", href: "https://github.com/CodeWithMoin/doculens-ai" },
     ],
@@ -60,6 +97,21 @@ export const projects: Project[] = [
     ],
     architectureNote:
       "The event record is the durable boundary between HTTP and model work. Workers can retry slow extraction or provider calls without holding request threads, while typed pipeline contexts preserve an audit trail.",
+    stageDetails: {
+      "React console": { role: "The operator surface: ingestion, classification, summaries, search, QA history, and lifecycle actions." },
+      "FastAPI gateway": { role: "Acknowledges work quickly and hands it to durable storage instead of holding the request open." },
+      "Durable event": {
+        role: "The durable boundary between HTTP and model work.",
+        note: "Workers can retry slow extraction or a slow provider without a request thread waiting on them.",
+      },
+      "Celery worker": { role: "Bounded execution, late acknowledgement, and worker-loss recovery." },
+      "Docling + chunks": { role: "Layout-aware extraction, chunked by tokens while preserving page provenance." },
+      "pgvector retrieval": {
+        role: "Dense-first retrieval.",
+        note: "Every vector carries document, chunk, page, title, and token metadata, so a citation survives ingestion, retrieval, and generation.",
+      },
+      "Grounded answer": { role: "The answer plus the page that supports it, so a reader can audit the claim instead of trusting it." },
+    },
     challenges: [
       {
         title: "Preserving evidence",
@@ -130,6 +182,10 @@ export const projects: Project[] = [
     ],
     stack: ["Python", "LangGraph", "FastAPI", "PostgreSQL", "pgvector", "Redis"],
     visual: "attest",
+    screenshotsTitle: "Figures from the evaluation",
+    screenshots: [
+      { src: "/work/attest/depth.jpg", alt: "Attest: strict correctness by question depth, with the verifier on and off, across 40 questions spanning one paper to a whole literature", feature: true },
+    ],
     links: [{ label: "Source", href: "https://github.com/CodeWithMoin/attest" }],
     problem:
       "RAG systems can produce fluent answers whose citations do not actually support the claim being made. That makes a high-level answer score a poor proxy for whether a user can safely act on it.",
@@ -146,6 +202,24 @@ export const projects: Project[] = [
     ],
     architectureNote:
       "The judge model receives the claim and exact retrieved passages, not the generator's hidden reasoning. It can approve, request a bounded revision, or route the case to human review.",
+    stageDetails: {
+      Question: { role: "A user question that has to be answered from documents, not from the model's memory." },
+      "Hybrid retrieval": {
+        role: "pgvector similarity fused with PostgreSQL full-text search.",
+        note: "Fusing before reranking lets exact terms and semantic matches both survive retrieval instead of one crowding the other out.",
+      },
+      Reranking: { role: "Orders the fused candidates so the passages that actually bear on the claim reach the generator." },
+      "Draft answer": { role: "A first answer with citations attached — treated as a proposal, not a result." },
+      "Independent judge": {
+        role: "Scores whether each claim is supported by the exact passages retrieved.",
+        note: "The judge sees the claim and the passages, never the generator's reasoning. Presence of a citation is not accepted as proof of grounding.",
+      },
+      "Bounded revision": {
+        role: "Revises within a fixed budget rather than looping until something looks confident.",
+        note: "Verification cut failing citations from 9.87% to 4.15%.",
+      },
+      "Human escalation": { role: "Where an answer goes when it cannot be supported — an explicit signal instead of confident prose." },
+    },
     challenges: [
       {
         title: "Verifying the exact claim",
@@ -216,7 +290,25 @@ export const projects: Project[] = [
     ],
     stack: ["Python", "FastAPI", "React", "Remotion", "Redis", "PostgreSQL"],
     visual: "decode",
-    links: [],
+    // Frames of real pipeline output, from the repo's docs/media — not mockups.
+    thumbnail: {
+      src: "/work/decode/card.jpg",
+      alt: "A frame from a Decode-generated lesson: the Transformer stack, drawn and laid out by the pipeline",
+      hoverSrc: "/work/decode/card-matrix.jpg",
+      position: "center",
+    },
+    screenshotsTitle: "Frames from a generated lesson",
+    screenshots: [
+      { src: "/work/decode/transformer.jpg", alt: "Decode lesson frame: the Transformer stack, from embedding through attention and feed-forward, with residual connections", feature: true },
+      { src: "/work/decode/attention.jpg", alt: "Decode lesson frame: attention across a sequence, with arcs from one token to the others it attends to" },
+      { src: "/work/decode/matrix.jpg", alt: "Decode lesson frame: attention scores as Q times K-transpose, worked through with numbers" },
+      { src: "/work/decode/gradient.jpg", alt: "Decode lesson frame: gradient descent stepping downhill across a contour plot" },
+    ],
+    badges: [{ label: "Currently building", live: true }],
+    links: [
+      { label: "Live demo", href: "https://decode-ai.up.railway.app" },
+      { label: "Source", href: "https://github.com/CodeWithMoin/decode" },
+    ],
     problem:
       "A prompt such as “Explain backpropagation” requires more than a script. The system has to choose a teaching sequence, decide what appears on screen, lay out every component, synchronize narration and motion, and render a coherent video. Direct LLM-generated layouts repeatedly produced collisions, off-frame elements, incorrect coordinates, unpredictable text overflow, and poorly coordinated animation timing; repeated retries consumed tokens without fixing the underlying spatial reasoning problem.",
     why:
@@ -233,6 +325,29 @@ export const projects: Project[] = [
     ],
     architectureNote:
       "The Orchestrator coordinates the Production Plan Generator, Teaching Plan Generator, Script Writer, Motion Designer, Voice, and Renderer. Versioned artifacts connect the stages. Content hashes and a dependency graph identify what changed, while the visual execution layer turns constrained primitives into validated coordinates, timing, and rendered scenes.",
+    stageDetails: {
+      "Natural-language concept": {
+        role: "The entire input. A prompt such as \u201cExplain backpropagation\u201d, with nothing else specified.",
+      },
+      Orchestrator: {
+        role: "Coordinates every downstream generator and owns the artifact graph.",
+        note: "Content hashes and a dependency graph identify what changed, so a revised upstream artifact only invalidates the work that actually depends on it.",
+      },
+      "Production plan": { role: "Decides what the finished piece has to contain before a word is written." },
+      "Teaching plan": { role: "Chooses the teaching sequence \u2014 what the viewer should see, and in what order." },
+      "Script + motion + voice": {
+        role: "Specialised agents write narration, choose motion, and produce audio against the teaching plan.",
+      },
+      "Visual component API": {
+        role: "The deterministic layer. Turns constrained primitives into validated coordinates, timing, and text measurement.",
+        note: "This split is what the system rests on: agents decide what to teach, code decides where it fits, whether it collides, and when each word lands.",
+      },
+      "Validation + correction": {
+        role: "Checks boundaries, collisions, and text overflow, then corrects \u2014 rather than retrying the prompt.",
+        note: "Unconstrained prompting produced collisions, off-frame elements, and bad timing. Better libraries did not help; retries burned tokens without fixing the spatial reasoning.",
+      },
+      Renderer: { role: "Renders the validated scenes to video." },
+    },
     challenges: [
       {
         title: "Converting intent into valid geometry",
@@ -303,7 +418,12 @@ export const projects: Project[] = [
     ],
     stack: ["PyTorch", "Whisper-tiny", "Transformers", "ONNX", "Python"],
     visual: "audio",
-    links: [],
+    screenshotsTitle: "Figures from the work",
+    screenshots: [
+      { src: "/work/smart-turn/wave-mel.jpg", alt: "Smart Turn: waveform and log-mel spectrogram of a completed turn beside one where the speaker is still talking, with the trailing pause marked", feature: true },
+      { src: "/work/smart-turn/eda.jpg", alt: "Smart Turn dataset analysis: language balance, real versus synthetic sources, speech duration, trailing pause by class, and signal-to-noise by source" },
+    ],
+    links: [{ label: "Source", href: "https://github.com/CodeWithMoin/smart-turn-hinglish" }],
     problem:
       "Silence alone is an unreliable handoff signal for voice agents. People pause mid-thought, speak at different rates, and use language-specific phrasing that can make a fixed timeout either interrupt too early or respond too late.",
     why:
@@ -318,6 +438,20 @@ export const projects: Project[] = [
     ],
     architectureNote:
       "The model reuses Whisper-tiny's speech representation, aggregates variable acoustic context with attention pooling, and emits a turn-completion decision through a lightweight classification head. The complete path is exported as one ONNX graph for CPU inference.",
+    stageDetails: {
+      "8-second audio context": {
+        role: "A rolling window of speech, long enough to catch a mid-thought pause.",
+        note: "Silence alone is unreliable: people pause mid-thought, speak at different rates, and phrase turns differently by language, so a fixed timeout either interrupts or lags.",
+      },
+      "Whisper-tiny encoder": { role: "Reuses an existing speech representation rather than training an acoustic model from scratch." },
+      "Attention pooling": { role: "Aggregates a variable-length acoustic context into one fixed vector, weighting the moments that carry the turn signal." },
+      "Classification head": { role: "A lightweight head over that vector — complete or not complete." },
+      "Single ONNX graph": {
+        role: "The whole path exported as one graph.",
+        note: "One file means no separate preprocessing service to deploy or keep in sync, and no remote inference dependency on the interaction loop.",
+      },
+      "Turn decision": { role: "The answer the voice agent acts on, in roughly 38ms per clip on CPU." },
+    },
     challenges: [
       {
         title: "Recognizing intent beyond silence",
@@ -388,6 +522,10 @@ export const projects: Project[] = [
     ],
     stack: ["LLM systems", "BERTopic", "UMAP", "HDBSCAN", "Knowledge extraction", "Taxonomy evaluation", "AWS"],
     visual: "taxonomy",
+    badges: [
+      { label: "Public summary only" },
+      { label: "1 of ~200 interns across India · Amazon ML Summer School 2025" },
+    ],
     links: [],
     problem:
       "Creating a taxonomy for a new feedback domain required a seven-notebook workflow: scientists selected examples, tuned prompts, ran clustering, and manually stitched a three-level hierarchy. Each domain consumed five to seven days of expert time and kept scientists in every step.",
@@ -403,6 +541,26 @@ export const projects: Project[] = [
     ],
     architectureNote:
       "The public pattern is a two-phase system: mine and validate a small, diverse in-domain example set, then run cached batch extraction at scale. Structured phrases feed density-based L3 discovery; the LLM classifies those clusters into a disjoint hierarchy, while deterministic attribution computes every quality claim before the LLM renders it in plain language.",
+    stageDetails: {
+      "Raw feedback": { role: "Millions of unstructured customer anecdotes for a domain nobody has modelled yet." },
+      "Self-calibrating KIE": {
+        role: "Mines and validates a small, diverse in-domain example set, then runs cached batch extraction at scale.",
+        note: "Calibration sizes were swept from 10 to 1,000 examples rather than picking the pilot size by intuition. Compact in-domain few-shot won because it preserves domain-specific failure patterns.",
+      },
+      "Four-pillar evidence": {
+        role: "Structured phrases, grouped into the four pillars the taxonomy is built from.",
+        note: "Ablating KIE entirely confirmed the need for this step: raw anecdotes were too noisy to form four coherent pillar taxonomies.",
+      },
+      "BERTopic L3 discovery": { role: "Density-based clustering finds the leaf-level concepts, bottom-up, from the structured phrases." },
+      "LLM hierarchy induction": {
+        role: "Classifies those clusters into a disjoint three-level hierarchy.",
+        note: "Direct one-shot prompting, bottom-up BERTopic, and top-down Leiden were compared against the same manual baseline and the same evaluation framework.",
+      },
+      "Grounded explainability": {
+        role: "Explains the taxonomy's own quality in plain language.",
+        note: "Deterministic attribution computes every quality claim first; the LLM only renders what the arithmetic already established.",
+      },
+    },
     challenges: [
       {
         title: "Calibrating without labelled training data",
@@ -497,6 +655,20 @@ export const projects: Project[] = [
     ],
     architectureNote:
       "UAM focuses on evaluating generated hierarchical structure and surfacing duplication. My LUMEN contribution focused on scaling taxonomies up and down and evaluating how classification quality, hallucination, and cost change as the label space grows.",
+    stageDetails: {
+      "Raw anecdotes": { role: "Unstructured feedback, before any structure has been imposed on it." },
+      "Candidate hierarchy": { role: "A generated three-level structure — the thing under evaluation, not the deliverable." },
+      "Structural measures": {
+        role: "Measures the shape of the hierarchy itself rather than only its labels.",
+        note: "This is what surfaced a duplication failure mode previously hidden in human-built structures: overlapping concepts distort the issue counts teams act on.",
+      },
+      "Scale-aware classifier": {
+        role: "Classifies into that hierarchy across label spaces from 150 to 5,000.",
+        note: "At 5,000 categories LUMEN reached 89.6 F1 against Sonnet 4.5's 89.4, at roughly 99% lower inference cost.",
+      },
+      "Error analysis": { role: "Separates where quality degrades from where cost does, since they do not move together as the label space grows." },
+      "Human-readable finding": { role: "The output that matters: a claim a team can act on, with the measurement behind it." },
+    },
     challenges: [
       {
         title: "Measuring hierarchy, not just labels",
@@ -580,6 +752,20 @@ export const projects: Project[] = [
     ],
     architectureNote:
       "The classification path stays on device. Cloud services are separated for optional identity, persistence, and community features rather than required for inference.",
+    stageDetails: {
+      "Camera frame": { role: "A single frame from the phone camera. It never leaves the device." },
+      "Image preprocessing": { role: "Normalisation and resizing on-device, sized for the quantized model rather than a server." },
+      "Quantized TFLite model": {
+        role: "Classification running locally, 60% smaller after quantization.",
+        note: "Keeping inference on-device is what makes the core flow work offline — and means camera input is never uploaded to classify it.",
+      },
+      "Material class": { role: "Recyclable, compost, or landfill — 82% accurate in the project benchmark, under 300ms." },
+      "Disposal guidance": { role: "The actionable part: what to actually do with the item." },
+      "Optional Appwrite sync": {
+        role: "Identity, persistence, and community features.",
+        note: "Deliberately optional. Cloud is separated from the classification path so nothing essential breaks without a network.",
+      },
+    },
     challenges: [
       {
         title: "Fitting the model to the phone",
@@ -629,9 +815,249 @@ export const projects: Project[] = [
       "Add calibrated uncertainty and a safe fallback when the image is out of distribution.",
     ],
   },
+  {
+    slug: "markalign",
+    index: "08",
+    title: "MarkAlign",
+    eyebrow: "Grading alignment · Evaluation",
+    year: "2026",
+    summary:
+      "A grader that learns one teacher's marking standard from 25 essays, and an eval harness that decides whether it agreed for the right reason or got lucky.",
+    thesis:
+      "Anything can output a score. The hard problem is telling a grader that works from one that merely looks like it works.",
+    role: "Creator · Evaluation design, grader profiling, calibration policy, and the eval harness",
+    metrics: [
+      { value: "0.664", label: "QWK — 92% of the human-vs-human ceiling" },
+      { value: "0.369 → 0.576", label: "calibrated QWK on a held-out second task" },
+      { value: "3 / 3", label: "calibrate-or-not calls the diagnosis got right" },
+    ],
+    stack: ["Python", "FastAPI", "Pydantic", "LLM evaluation", "Experiment design"],
+    thumbnail: {
+      // Cropped for card size: a full-page screenshot is illegible at 380px wide.
+      src: "/work/markalign/card.jpg",
+      alt: "MarkAlign grading an essay, each score tied to a highlighted line in the text",
+      hoverSrc: "/work/markalign/card-scorecard.jpg",
+    },
+    screenshots: [
+      { src: "/work/markalign/graded.jpg", alt: "MarkAlign grading an essay: holistic and per-trait scores beside the teacher's mark, with every score tied to a highlighted line in the text", feature: true },
+      { src: "/work/markalign/scorecard.jpg", alt: "MarkAlign scorecard: 0.66 quadratic weighted kappa against the teacher, 92% of the human-vs-human ceiling, on 120 held-out essays" },
+      { src: "/work/markalign/landing.jpg", alt: "MarkAlign landing page" },
+    ],
+    links: [
+      { label: "Live demo", href: "https://markalign.up.railway.app" },
+      { label: "Source", href: "https://github.com/CodeWithMoin/markalign" },
+    ],
+    problem:
+      "Putting an AI grader in front of student work fails on a question a score cannot answer: did it match the teacher for the right reason, or did it get lucky? A bare agreement number hides the difference between a grader with a fixable systematic bias and one that is simply noisy.",
+    why:
+      "Read against 1.0, every grader looks broken. Two trained human raters on this ASAP set agree at QWK 0.72, so the ceiling — not perfection — is the bar. Separating score-agreement from reasoning-agreement, and systematic bias from random noise, is the judgment the system is built to make legible.",
+    architecture: [
+      "Teacher's marked essays",
+      "Profile builder",
+      "Per-trait checklist",
+      "Score-distribution floor",
+      "Blind grading",
+      "Held-out QWK",
+      "Bias diagnosis",
+      "Gated calibration",
+    ],
+    architectureNote:
+      "The profile builder learns a per-trait ladder of yes/no questions from the teacher's own examples, so the score is a count of passed bars rather than an ordinal judgement. Code counts how the teacher actually uses each trait's scale; that distribution enters the prompt as a floor. Diagnosis runs before calibration and decides whether calibration should run at all.",
+    stageDetails: {
+      "Teacher's marked essays": { role: "25 calibration essays, already marked by the teacher whose standard is being learned." },
+      "Profile builder": {
+        role: "Derives what this teacher rewards and penalises, with evidence and strength attached.",
+        note: "Learned from 25 essays with no fine-tuning.",
+      },
+      "Per-trait checklist": {
+        role: "Turns each trait into a ladder of yes/no questions; the score is the count of passed bars.",
+        note: "LLM judges are unstable on ordinal scales but steady on binary decisions. This moved QWK from 0.585 to 0.656 — but its worst misses got worse, because the ladder had no floor.",
+      },
+      "Score-distribution floor": {
+        role: "Counts how the teacher actually uses each trait's scale, and states it as a constraint.",
+        note: "Counting is code's job; noticing a distribution across 25 essays is what an LLM quietly fails at. Every metric moved the right way at once.",
+      },
+      "Blind grading": { role: "Grades held-out essays without seeing the human mark." },
+      "Held-out QWK": { role: "Agreement against the teacher, read against the 0.72 human-vs-human ceiling rather than against 1.0." },
+      "Bias diagnosis": {
+        role: "Separates a fixable systematic pattern from irreducible noise.",
+        note: "A grader that ranks correctly but runs harsh and compressed is miscalibrated, not broken — a different problem with a different fix.",
+      },
+      "Gated calibration": {
+        role: "Applies a scale transform only when the diagnosis says to.",
+        note: "The same transform that recovered a harsh grader (0.40 → 0.47) hurt one that already had healthy spread (0.585 → 0.478). Knowing when not to calibrate is the point.",
+      },
+    },
+    challenges: [
+      {
+        title: "Ordinal instability",
+        detail:
+          "LLM judges are unstable asked to rate 0–3 but steady on binary decisions. Replacing the rating with a learned yes/no ladder, each rung pinned to a verbatim quote, moved QWK from 0.585 to 0.656.",
+      },
+      {
+        title: "A ladder with no floor",
+        detail:
+          "The checklist made the worst misses worse — within-1 agreement fell to 41% because weak essays took 0s a real teacher never gives. Counting the teacher's actual score distribution over the calibration set and stating it as a constraint fixed it without loosening the ladder.",
+      },
+      {
+        title: "Knowing when not to calibrate",
+        detail:
+          "The same scale transform that recovered a harsh, compressed grader (0.40 → 0.47) actively hurt one that already had healthy spread (0.585 → 0.478). Calibration had to become conditional on the diagnosis rather than a default step.",
+      },
+    ],
+    tradeoffs: [
+      {
+        decision: "Checklist scoring over direct rating",
+        rationale: "Trades interpretive freedom for scale stability, and makes every point traceable to a quoted span.",
+      },
+      {
+        decision: "Diagnosis gates calibration",
+        rationale: "A blanket calibration step would have degraded the strongest configuration; the rule only fires on a monotonic-but-shifted signature.",
+      },
+      {
+        decision: "Single held-out split, stated as such",
+        rationale: "120 held-out essays on one split is a strong single run, not a cross-validated mean, and the write-up says so rather than implying more.",
+      },
+    ],
+    experiments: [
+      "Compared graders and prompt formats against the same held-out teacher marks, isolating the model swap from the prompt-format change.",
+      "Derived a per-trait score-distribution floor from the 25-essay calibration set and measured every metric moving together.",
+      "Re-ran the identical pipeline on ASAP set 1 — different genre, scale, and rater pair — and predicted the calibrate/don't-calibrate call before running it.",
+    ],
+    results: [
+      "QWK 0.664 against the teacher on ASAP set 7, 92% of the 0.72 human-vs-human ceiling, learning the standard from 25 essays with no fine-tuning.",
+      "On an unseen task type, diagnosis predicted the calibration case in advance: QWK 0.369 to 0.576, mean error roughly halved.",
+      "A deterministic mock mode with a deliberate length bias, so the harness can be run end to end with no API key and still catch a real systematic error.",
+    ],
+    lessons: [
+      "Counting is code's job. Noticing a distribution across 25 essays is exactly what an LLM quietly fails at.",
+      "A calibration step is a claim about the error, not a free improvement — applied blindly it degrades a healthy grader.",
+      "Reporting against the human ceiling rather than 1.0 changes which results look like progress.",
+    ],
+    future: [
+      "Establish cross-task teacher transfer, which needs the same identified grader on two assignments.",
+      "Promote the reasoning taxonomy from method to reported result with a larger adjudicated sample.",
+      "Cross-validate the headline number instead of relying on one held-out split.",
+    ],
+  },
+  {
+    slug: "trellis",
+    index: "09",
+    title: "Trellis",
+    eyebrow: "Durable execution · Distributed systems",
+    year: "2026",
+    summary:
+      "An Order → Payment → Shipping lifecycle on Temporal where every business step is deliberately unreliable, and the workflow finishes anyway.",
+    thesis:
+      "Reliability is not retry logic sprinkled over a request handler. It is a durable execution boundary that survives process loss, and a compensation path for the work that already succeeded.",
+    role: "Builder · Workflow design, signal handling, compensation, and queue isolation",
+    metrics: [
+      { value: "~2s", label: "end to end, against a 15s budget" },
+      { value: "300s", label: "injected hang every step must survive" },
+      { value: "2", label: "isolated task queues, separate worker processes" },
+    ],
+    stack: ["Python", "Temporal", "FastAPI", "PostgreSQL", "Docker"],
+    links: [{ label: "Source", href: "https://github.com/CodeWithMoin/trellis" }],
+    problem:
+      "Every business step in the brief calls a function that randomly throws or sleeps for 300 seconds. A normal request handler either blocks on it, loses the work when the process dies, or leaves a payment charged against an order that never shipped.",
+    why:
+      "The interesting part is not retrying. It is what the system owes the customer when step three fails after step two took their money, and whether a human approval can be part of a workflow without a thread waiting on it.",
+    architecture: [
+      "FastAPI start",
+      "OrderWorkflow",
+      "Validate",
+      "Manual-review gate",
+      "Charge",
+      "ShippingWorkflow child",
+      "Dispatch carrier",
+      "Compensate or complete",
+    ],
+    architectureNote:
+      "The manual-review gate is a durable timer racing a human approve_order signal — approve and it proceeds, let the timer win and the order cancels. Shipping is a child workflow on its own task queue in its own worker process, so it can be scaled or deployed independently; on exhausted retries it signals the parent, which restarts it up to a bound before compensating.",
+    stageDetails: {
+      "FastAPI start": { role: "Accepts the order and hands it to the workflow engine rather than processing it in the request." },
+      OrderWorkflow: { role: "The durable parent. Survives process loss, because progress lives in the engine's event history, not in memory." },
+      Validate: { role: "First business step — and, like every step here, it may randomly throw or hang for 300 seconds." },
+      "Manual-review gate": {
+        role: "A durable timer raced against a human approve_order signal.",
+        note: "Approve and it proceeds; let the timer win and the order cancels. No thread waits on the human, so an order can park here for as long as the business allows.",
+      },
+      Charge: { role: "Takes the money. Everything after this point has to reckon with the fact that it already happened." },
+      "ShippingWorkflow child": {
+        role: "A child workflow on its own task queue, in its own worker process.",
+        note: "Queue isolation is only real when the child physically runs elsewhere — that is what stops shipping failures starving order processing.",
+      },
+      "Dispatch carrier": {
+        role: "The step most likely to genuinely fail.",
+        note: "On exhausted retries it signals the parent, which restarts it up to a bound before giving up. Unbounded retry on a dead carrier turns a recoverable order into an indefinite one.",
+      },
+      "Compensate or complete": {
+        role: "Either the order ships, or the terminal state records the refund owed for a payment already taken.",
+      },
+    },
+    challenges: [
+      {
+        title: "Human approval without a waiting thread",
+        detail:
+          "A durable timer raced against an inbound signal replaces the usual blocking call, so an order can park at manual review for as long as the business allows without holding any process open.",
+      },
+      {
+        title: "Compensation after partial success",
+        detail:
+          "Cancelling before shipment is honored, but if payment already went through the terminal state records the refund compensation rather than silently dropping the charge.",
+      },
+      {
+        title: "Failure isolation across queues",
+        detail:
+          "Two workers polling two queues means shipping failures cannot starve order processing, and the child physically runs in a different process.",
+      },
+    ],
+    tradeoffs: [
+      {
+        decision: "Child workflow over an inline activity",
+        rationale: "Costs an extra queue and worker, buys independent scaling and a failure boundary that shows up in the event history.",
+      },
+      {
+        decision: "Bounded restarts before compensating",
+        rationale: "Unbounded retry on a genuinely dead carrier turns a recoverable order into an indefinite one; the bound forces a decision.",
+      },
+      {
+        decision: "Postgres for application state, Temporal for execution state",
+        rationale: "Keeps the workflow engine authoritative about progress without making it the system of record for orders.",
+      },
+    ],
+    experiments: [
+      "Ran the full lifecycle repeatedly against injected random failures and 300-second hangs to confirm the time budget held.",
+      "Exercised cancel, address-update, approve, and dispatch-failed signals against workflows parked at different steps.",
+      "Forced carrier dispatch to exhaust its retries to verify the parent restart bound and the compensation path.",
+    ],
+    results: [
+      "Completes in about two seconds against a 15-second budget despite a random throw-or-hang on every business step.",
+      "Live status query reporting the current step, flags, per-activity retry counts, and the last error.",
+      "Whole stack reproducible with one docker compose command — Temporal server, Postgres, two workers, and the API.",
+    ],
+    lessons: [
+      "A durable timer racing a signal removes a whole class of state machine that would otherwise need its own storage.",
+      "Queue isolation is only real when the child runs in a different process, not just under a different name.",
+      "Event history is the observability story; reading it top to bottom explains the run better than any log line.",
+    ],
+    future: [
+      "Add idempotency keys on the payment activity so a duplicated start cannot double-charge.",
+      "Model the refund as a first-class compensating workflow rather than a terminal-state record.",
+      "Load-test queue isolation under a sustained shipping backlog.",
+    ],
+  },
 ];
 
-export const publications = [
+export const publications: {
+  title: string;
+  venue: string;
+  role: string;
+  status: string;
+  abstract: string;
+  /** The case study on this site that documents the work behind the paper. */
+  caseStudy?: { label: string; slug: string };
+}[] = [
   {
     title: "Universal Anecdote Miner (UAM)",
     venue: "Amazon ML Conference · 2026",
@@ -639,6 +1065,7 @@ export const publications = [
     status: "Submitted",
     abstract:
       "A framework for evaluating how automated systems construct hierarchical structure from raw feedback, including analysis of a subtle duplication failure mode in human-built taxonomies.",
+    caseStudy: { label: "The system behind it", slug: "amazon-applied-science" },
   },
   {
     title: "LUMEN: Robust LLM Classification Across Taxonomy Scales",
@@ -647,57 +1074,43 @@ export const publications = [
     status: "Submitted",
     abstract:
       "A scale-aware classification study spanning 150 to 5,000 labels. I contributed the taxonomy-scaling experiments; on Clothing, LUMEN maintained Claude-competitive F1 at up to 99% lower inference cost than Sonnet 4.5.",
+    caseStudy: { label: "The experiments", slug: "taxonomy-evaluation-research" },
   },
 ];
 
-export const interests = [
+export const repositories: {
+  name: string;
+  description: string;
+  language: string;
+  license?: string;
+  href: string;
+  external: boolean;
+}[] = [
   {
-    title: "Reliable AI Systems",
-    detail: "Grounded outputs, calibrated failure, provenance, and operator-visible evidence.",
+    name: "markalign",
+    description: "Learns one teacher's marking standard, then measures whether it agreed for the right reason. Live demo, no key needed for mock mode.",
+    language: "Python",
+    href: "https://github.com/CodeWithMoin/markalign",
+    external: true,
   },
   {
-    title: "Retrieval",
-    detail: "Layout-aware ingestion, ranking, hybrid search, citations, and measurable recall.",
+    name: "trellis",
+    description: "Durable Order → Payment → Shipping orchestration on Temporal, with signals, compensation, and queue isolation.",
+    language: "Python",
+    href: "https://github.com/CodeWithMoin/trellis",
+    external: true,
   },
   {
-    title: "LLM Evaluation",
-    detail: "Task-specific metrics, structural error analysis, cost-quality tradeoffs, and judge reliability.",
-  },
-  {
-    title: "ML Infrastructure",
-    detail: "Typed pipelines, asynchronous execution, observability, reproducible experiments, and model serving.",
-  },
-  {
-    title: "Distributed Systems",
-    detail: "Durable work boundaries, retries, idempotency, queues, consistency, and failure recovery.",
-  },
-  {
-    title: "Backend Engineering",
-    detail: "Versioned APIs, data contracts, authentication, lifecycle design, and production safety.",
-  },
-];
-
-export const repositories = [
-  {
-    name: "Decode",
-    description: "Multi-agent educational video generation with constrained visual primitives, validation loops, and incremental regeneration.",
-    language: "Python + TypeScript",
-    license: "Case study",
-    href: "/work/decode",
-    external: false,
-  },
-  {
-    name: "Smart Turn",
-    description: "Bilingual speech turn-completion detection using Whisper-tiny, attention pooling, and low-latency ONNX inference.",
-    language: "Python + ONNX",
-    license: "Case study",
-    href: "/work/smart-turn",
-    external: false,
+    name: "smart-turn-hinglish",
+    description: "Tiny audio turn-detection for Hinglish voice agents, from the Whisper-tiny encoder. Single-file ONNX deploy.",
+    language: "Python · ONNX",
+    href: "https://github.com/CodeWithMoin/smart-turn-hinglish",
+    external: true,
   },
   {
     name: "doculens-ai",
     description: "Citation-first RAG, semantic search, and grounded QA for operational documents.",
-    language: "TypeScript + Python",
+    language: "TypeScript · Python",
     license: "MIT",
     href: "https://github.com/CodeWithMoin/doculens-ai",
     external: true,
@@ -718,7 +1131,29 @@ export const repositories = [
     href: "https://github.com/CodeWithMoin/EcoGuardian-AI",
     external: true,
   },
+  {
+    name: "Decode",
+    description: "Multi-agent educational video generation with constrained visual primitives, validation loops, and incremental regeneration.",
+    language: "Python · TypeScript",
+    href: "/work/decode",
+    external: false,
+  },
 ];
+
+/**
+ * `stageDetails` is keyed by stage name, so a typo or a renamed stage would silently
+ * render an empty panel instead of failing. This runs at import time, which means a
+ * mismatch breaks `next build` rather than shipping.
+ */
+for (const project of projects) {
+  for (const stage of Object.keys(project.stageDetails ?? {})) {
+    if (!project.architecture.includes(stage)) {
+      throw new Error(
+        `Project "${project.slug}": stageDetails key "${stage}" is not one of its architecture stages.`,
+      );
+    }
+  }
+}
 
 export function getProject(slug: string) {
   return projects.find((project) => project.slug === slug);

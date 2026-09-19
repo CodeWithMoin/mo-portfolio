@@ -6,24 +6,30 @@ Personal portfolio for **Moinuddin Shaik**, an Applied Scientist and AI Systems 
 
 ## What this portfolio communicates
 
-The site is designed around technical evidence rather than a traditional skills-first résumé. It presents major projects as engineering case studies, with emphasis on:
+The site is built around technical evidence rather than a skills-first résumé. Projects are written as engineering case studies covering the problem, the operating constraint, the architecture, the experiments and tradeoffs, and the measured result.
 
-- the problem and why it matters;
-- system architecture and operating constraints;
-- experiments, tradeoffs, and failure modes;
-- measurable results;
-- lessons and future work.
+## Two modes
+
+The site runs in one of two modes, chosen by the visitor and persisted to `localStorage`:
+
+| | Recruiter (default) | Founder |
+| --- | --- | --- |
+| Leads with | Amazon metrics, experience, research | What he ships, and how far he takes it alone |
+| Project copy | `summary` — what the system is | `thesis` — the call behind it |
+| Featured work | Amazon, MarkAlign, taxonomy research, DocuLens | Decode, DocuLens, Trellis, MarkAlign |
+| Section order | Work → Experience → Stack → Research → Lab | Work → What he builds → Lab → Before AI |
+
+`lib/audience.ts` is the single source of truth for mode names, section order, and header links. Sections reorder through CSS `order`, so nothing unmounts on a switch — no lost scroll, no replayed animation — and every section stays in the server-rendered HTML for crawlers regardless of mode.
+
+Any mode is shareable as a link: `?v=founder`. The former `?v=startup` spelling still resolves.
+
+## Ask, and the retrieval behind it
+
+`lib/retrieval.ts` is a dependency-free TF-IDF index with cosine ranking, built at module load from the site's own content. `lib/knowledge.ts` layers curated intents over it.
+
+There is no model call anywhere in this path, and no API key. An answer is either a matched intent, a retrieved document, or an explicit miss — the agent will not generate text it cannot source, and it says which of the three it did. The **Lab** section exposes the same index with the arithmetic visible: tokens, idf weights, cosine scores, and per-term contributions, recomputed as you type.
 
 ## Featured work
-
-- **DocuLens AI** — citation-first document intelligence and grounded retrieval.
-- **Attest** — self-verifying agentic RAG with claim-level evidence checks.
-- **Decode** — multi-agent workflows with artifact lineage and recoverable execution.
-- **Smart Turn** — bilingual, low-latency speech turn detection for voice agents.
-- **Autonomous Taxonomy Systems at Amazon** — a public-safe summary of self-calibrating extraction, taxonomy induction, and explainability work.
-- **Evaluation for Taxonomies at Scale** — research on hierarchical quality and classification across large label spaces.
-- **EcoGuardian AI** — fast, offline waste classification for resource-constrained devices.
-
 ## Stack
 
 - Next.js 15 with the App Router
@@ -41,6 +47,28 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Chat (optional LLM)
+
+The side chat (the **Ask** button, bottom right) works with no backend: it answers from the in-browser retrieval index. Deploying the Cloudflare Pages Function in `functions/api/ask.ts` upgrades it to a streamed, multi-turn chat with Claude, grounded in the full portfolio record (`functions/corpus.json`, regenerated from the typed data before every build).
+
+1. In Cloudflare Pages → Settings → Environment variables, add the **secret** `ANTHROPIC_API_KEY`. It is only ever read server-side.
+2. Optional: `ASK_MODEL` (default `claude-opus-5`).
+3. **Quota.** Create a KV namespace (Workers & Pages → KV) and bind it to the Pages project as `ASK_LIMITS` (Settings → Functions → KV namespace bindings). With it bound, each visitor gets **10 questions per UTC day** and the whole site **300**; change either with `ASK_DAILY_LIMIT` / `ASK_GLOBAL_DAILY_LIMIT`. IPs are never stored — the key is a SHA-256 of the IP salted with the date. Without the binding the counters live in one isolate's memory and only slow a burst, so bind it before sharing the link. When a visitor's quota is spent the endpoint answers 429 and the chat says so and keeps answering from the in-browser index.
+
+Guardrails in `functions/api/ask.ts`, in the order a request meets them: same-origin + JSON-only + 24 KB body cap; strict shape validation (600-char questions, 8 turns); the quotas above; a narrow injection screen that declines without calling the model (and screens forged assistant history too); a system prompt that scopes the model to the portfolio, forbids revealing itself or dumping the corpus, and refuses to speak for Moin on salary, availability, or visa questions; a 700-token output cap; model refusals turned into one plain sentence.
+
+Without the secret the function answers `503`, the client notices once, and the chat falls back to local retrieval for the rest of the session. Each answer is labelled with the path that produced it.
+
+Cost shape: the ~14K-token corpus is a cached system prompt, so a warm question costs roughly a cent on the default model; the first question after five idle minutes pays the cache write (~9¢).
+
+## Content checks
+
+```bash
+npm run check
+```
+
+Asserts the invariants the site derives from data, plus the properties of the hand-written retrieval engine (cosine reaches exactly 1 on identical text, scores stay in [0,1], per-term contributions sum to the score, rare terms outweigh ubiquitous ones): every header link resolves to a section the current mode actually shows, every capability resolves to real projects, every `stageDetails` key matches a stage in that project's architecture, publications and roles link to case studies that exist, and the answer layer still answers what it should and refuses what it cannot source.
 
 ## Production build
 
@@ -67,20 +95,40 @@ The Next.js configuration uses static export, unoptimized local images, and gene
 ## Project structure
 
 ```text
-app/                    Pages, metadata, and case-study routes
+app/                    Pages, metadata, JSON-LD, and case-study routes
 components/             Interface, motion, and visualization components
-lib/portfolio-data.ts   Project narratives and structured portfolio content
+lib/audience.ts         Mode definitions, section order, header links
+lib/portfolio-data.ts   Project case studies and structured content
+lib/profile.ts          Identity, roles, testimonials, prior work
+lib/capabilities.ts     Capability groups, resolved to projects by slug
+lib/retrieval.ts        TF-IDF index and cosine ranking
+lib/knowledge.ts        Answer corpus and intents over that index
+lib/results.ts          Baselined results table
+lib/ask-remote.ts       Client for the optional chat endpoint
+functions/api/ask.ts    Cloudflare Pages Function: grounded Claude chat
+scripts/                Corpus generation and content checks
 public/                 Résumé, fonts, and project imagery
 ```
 
 ## Quality principles
 
-- Responsive, mobile-first layouts
-- Keyboard-visible focus states
-- Reduced-motion support
-- Semantic headings and navigation
-- Self-hosted fonts and optimized static assets
-- Minimal client-side state
+- Content lives in typed modules; components render it and never restate it. A capability referencing a removed project throws at build rather than rendering an empty card.
+- Responsive layouts verified at 320 / 375 / 430 / 768 / 1440 with no horizontal overflow at any width; keyboard-visible focus states, a skip link, and roving arrow-key navigation in the architecture diagrams.
+- Reduced-motion support throughout; with animation disabled the page still reads in full.
+- Semantic headings and navigation, JSON-LD `Person` schema.
+- Self-hosted fonts, no third-party requests, no analytics.
+- Minimal client-side state and no runtime data fetching — the whole site is static.
+
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `⌘K` / `Ctrl+K` | Open the command bar |
+| `/` | Same, without the browser fighting you for `⌘K` |
+| `↑` `↓` `⏎` | Move and select |
+| `esc` | Close, or step back from an answer |
+
+Typing `whoami`, `ls`, or `help` into the ask bar does something. So does the Konami code.
 
 ## Contact
 

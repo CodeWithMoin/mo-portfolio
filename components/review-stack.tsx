@@ -91,9 +91,13 @@ export function ReviewStack({
   }, [advance, autoplayDelay, paused, reduceMotion, total]);
 
   return (
-    <div className={className}>
+    // Focus anywhere in the component pauses rotation, so the controls and the deck
+    // are both covered — not just the deck the pointer happens to be over.
+    <div className={className} onBlur={() => setPaused(false)} onFocus={() => setPaused(true)}>
       <div
         className="relative [perspective:1200px]"
+        onBlur={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
         style={{ aspectRatio: "1450 / 630" }}
@@ -126,18 +130,17 @@ export function ReviewStack({
         >
           Next review <span aria-hidden="true">→</span>
         </button>
-        <div aria-label="Choose a review" className="flex items-center gap-2" role="tablist">
+        <div aria-label="Choose a review" className="flex items-center gap-2" role="group">
           {cards.map((card, index) => (
             <button
+              aria-current={index === topIndex ? "true" : undefined}
               aria-label={`Show review ${index + 1} of ${total}`}
-              aria-selected={index === topIndex}
               className={cn(
                 "size-2 rounded-full transition",
                 index === topIndex ? "bg-foreground" : "bg-border hover:bg-muted-strong",
               )}
               key={card.id}
               onClick={() => setTopIndex(index)}
-              role="tab"
               type="button"
             />
           ))}

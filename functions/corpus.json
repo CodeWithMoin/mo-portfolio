@@ -1,0 +1,1366 @@
+{
+  "profile": {
+    "name": "Moinuddin Shaik",
+    "role": "AI Engineer · Applied Scientist",
+    "tagline": "Builds AI systems and the evaluation that proves they work.",
+    "location": "Hyderabad, India",
+    "education": "B.Tech, Computer Science (AI & ML), 9.09 / 10",
+    "currently": "Building AI-native products and first-author research",
+    "openTo": "Applied Scientist, ML Systems, and early-stage AI engineering roles",
+    "focus": [
+      "LLM systems",
+      "Retrieval",
+      "Evaluation",
+      "ML infrastructure"
+    ],
+    "contact": {
+      "email": "hello@moinuddin.app",
+      "github": "https://github.com/CodeWithMoin",
+      "linkedin": "https://linkedin.com/in/codewithmoin",
+      "resume": "https://moinuddin.app/Moinuddin_Shaik_Resume.pdf"
+    }
+  },
+  "experience": [
+    {
+      "company": "Amazon",
+      "org": "RBS Sciences",
+      "title": "Applied Scientist Intern",
+      "period": "Jan–Jun 2026",
+      "location": "Bengaluru",
+      "problem": "Creating a taxonomy for a new feedback domain took a seven-notebook workflow. Scientists picked examples, tuned prompts, ran clustering, and stitched a three-level hierarchy by hand — five to seven days of expert time per domain, with a scientist in every step.",
+      "built": "A self-calibrating knowledge-extraction and taxonomy-induction system, shipped as a production container for multi-domain, million-record workloads.",
+      "approach": [
+        "Mine and validate a small, diverse in-domain example set, then run cached batch extraction at scale.",
+        "Density-based L3 discovery over structured phrases; the LLM classifies those clusters into a disjoint hierarchy.",
+        "Deterministic attribution computes every quality claim before the LLM renders it in plain language."
+      ],
+      "outcomes": [
+        {
+          "value": "0.74",
+          "label": "taxonomy F1, against a 0.71 manual scientist baseline"
+        },
+        {
+          "value": "<18h",
+          "label": "autonomous run, down from a five-to-seven-day workflow"
+        },
+        {
+          "value": "23.8% → 0.7%",
+          "label": "missing Category and Aspect extractions"
+        },
+        {
+          "value": "2.7× / 53%",
+          "label": "faster extraction, lower inference cost"
+        },
+        {
+          "value": "12 teams",
+          "label": "adopted the explainable evaluation framework"
+        }
+      ],
+      "caseStudy": "amazon-applied-science",
+      "note": "1 of ~200 Applied Scientist interns across India. Selected via Amazon ML Summer School 2025 — 3,000 of 1.6 lakh applicants."
+    },
+    {
+      "company": "Intel",
+      "org": "Unnati",
+      "title": "AI Intern",
+      "period": "May–Jul 2025",
+      "location": "Hyderabad",
+      "problem": "Real-time video enhancement had to run on low-resource devices with no dedicated GPU, where the usual answer is to accept worse output or a slower frame budget.",
+      "built": "An optimized real-time video enhancement pipeline targeted at CPU-only inference.",
+      "approach": [
+        "Traded model capacity against perceptual quality rather than accepting the default architecture.",
+        "Tuned for CPU inference as the target, not as a fallback path."
+      ],
+      "outcomes": [
+        {
+          "value": "20%",
+          "label": "clearer output"
+        },
+        {
+          "value": "30%",
+          "label": "smaller model"
+        },
+        {
+          "value": "35%",
+          "label": "faster CPU inference, without a dedicated GPU"
+        }
+      ]
+    }
+  ],
+  "baselinedResults": [
+    {
+      "slug": "amazon-applied-science",
+      "system": "Taxonomy induction · Amazon",
+      "metric": "Taxonomy F1",
+      "baseline": "0.71",
+      "baselineNote": "manual, by scientists",
+      "result": "0.74",
+      "better": "higher",
+      "caseStudy": "https://moinuddin.app/work/amazon-applied-science"
+    },
+    {
+      "slug": "amazon-applied-science",
+      "system": "Knowledge extraction · Amazon",
+      "metric": "Missing Category / Aspect extractions",
+      "baseline": "23.8%",
+      "result": "0.7%",
+      "better": "lower",
+      "caseStudy": "https://moinuddin.app/work/amazon-applied-science"
+    },
+    {
+      "slug": "amazon-applied-science",
+      "system": "Domain onboarding · Amazon",
+      "metric": "Time to a new taxonomy",
+      "baseline": "5–7 days",
+      "baselineNote": "seven-notebook workflow",
+      "result": "<18 h",
+      "better": "lower",
+      "note": "autonomous run",
+      "caseStudy": "https://moinuddin.app/work/amazon-applied-science"
+    },
+    {
+      "slug": "taxonomy-evaluation-research",
+      "system": "LUMEN · 5,000 labels",
+      "metric": "Classification F1",
+      "baseline": "89.4",
+      "baselineNote": "Sonnet 4.5",
+      "result": "89.6",
+      "better": "higher",
+      "note": "at ~99% lower inference cost",
+      "caseStudy": "https://moinuddin.app/work/taxonomy-evaluation-research"
+    },
+    {
+      "slug": "markalign",
+      "system": "MarkAlign · ASAP essays",
+      "metric": "QWK against the teacher",
+      "baseline": "0.585",
+      "baselineNote": "direct rating, same model",
+      "result": "0.664",
+      "better": "higher",
+      "note": "92% of the 0.72 human-vs-human ceiling",
+      "caseStudy": "https://moinuddin.app/work/markalign"
+    },
+    {
+      "slug": "attest",
+      "system": "Attest · agentic RAG",
+      "metric": "Failing citations",
+      "baseline": "9.87%",
+      "baselineNote": "before verification",
+      "result": "4.15%",
+      "better": "lower",
+      "caseStudy": "https://moinuddin.app/work/attest"
+    }
+  ],
+  "projects": [
+    {
+      "slug": "doculens-ai",
+      "title": "DocuLens AI",
+      "eyebrow": "Open-source document intelligence",
+      "year": "2025–Now",
+      "summary": "A citation-first document system that turns unstructured files into searchable, operational knowledge—without hiding retrieval behind a chat box.",
+      "thesis": "Reliable document AI begins with provenance, measurable retrieval, and asynchronous work—not a clever prompt.",
+      "role": "Creator · Product, system design, ML and full-stack engineering",
+      "metrics": [
+        {
+          "value": "10K+",
+          "label": "documents designed for"
+        },
+        {
+          "value": "<800ms",
+          "label": "retrieval latency"
+        },
+        {
+          "value": "<3s",
+          "label": "end-to-end response"
+        }
+      ],
+      "stack": [
+        "FastAPI",
+        "React 19",
+        "PostgreSQL",
+        "pgvector",
+        "Celery",
+        "Redis",
+        "Docling"
+      ],
+      "links": [
+        {
+          "label": "Source",
+          "href": "https://github.com/CodeWithMoin/doculens-ai"
+        }
+      ],
+      "problem": "Business documents contain decisions, obligations, and evidence, but most systems flatten them into text and return answers that are difficult to audit. Teams need a way to ingest files at scale, retrieve the right context, and trace every answer back to a source.",
+      "why": "A plausible answer without provenance is operationally weak. In document-heavy work, the system must make failure visible: what was retrieved, which page supported the answer, and how confident the pipeline is.",
+      "architecture": [
+        "React console",
+        "FastAPI gateway",
+        "Durable event",
+        "Celery worker",
+        "Docling + chunks",
+        "pgvector retrieval",
+        "Grounded answer"
+      ],
+      "architectureNote": "The event record is the durable boundary between HTTP and model work. Workers can retry slow extraction or provider calls without holding request threads, while typed pipeline contexts preserve an audit trail.",
+      "stageDetails": {
+        "React console": {
+          "role": "The operator surface: ingestion, classification, summaries, search, QA history, and lifecycle actions."
+        },
+        "FastAPI gateway": {
+          "role": "Acknowledges work quickly and hands it to durable storage instead of holding the request open."
+        },
+        "Durable event": {
+          "role": "The durable boundary between HTTP and model work.",
+          "note": "Workers can retry slow extraction or a slow provider without a request thread waiting on them."
+        },
+        "Celery worker": {
+          "role": "Bounded execution, late acknowledgement, and worker-loss recovery."
+        },
+        "Docling + chunks": {
+          "role": "Layout-aware extraction, chunked by tokens while preserving page provenance."
+        },
+        "pgvector retrieval": {
+          "role": "Dense-first retrieval.",
+          "note": "Every vector carries document, chunk, page, title, and token metadata, so a citation survives ingestion, retrieval, and generation."
+        },
+        "Grounded answer": {
+          "role": "The answer plus the page that supports it, so a reader can audit the claim instead of trusting it."
+        }
+      },
+      "challenges": [
+        {
+          "title": "Preserving evidence",
+          "detail": "Every vector carries document, chunk, page, title, and token metadata so citations survive ingestion, retrieval, and answer generation."
+        },
+        {
+          "title": "Separating latency classes",
+          "detail": "FastAPI acknowledges work quickly; Celery handles extraction and model calls with bounded execution, late acknowledgement, and worker-loss recovery."
+        },
+        {
+          "title": "Making retrieval testable",
+          "detail": "Offline Recall@K and MRR utilities turn chunking and ranking changes into experiments instead of aesthetic prompt tweaks."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "decision": "Modular monolith over early microservices",
+          "rationale": "One deployable backend keeps operations and contribution simple until scaling evidence justifies extraction."
+        },
+        {
+          "decision": "Dense-first retrieval",
+          "rationale": "A coherent baseline came before hybrid ranking; reciprocal-rank fusion is reserved for a labelled benchmark."
+        },
+        {
+          "decision": "Read-only public showcase",
+          "rationale": "Recruiters can inspect completed workflows without public uploads, visitor data, or model spend."
+        }
+      ],
+      "experiments": [
+        "Measured retrieval independently from generation with labelled relevant-chunk fixtures.",
+        "Bounded chunks by tokens while preserving layout and page provenance.",
+        "Added provider-neutral structured outputs to compare model behavior behind the same contract."
+      ],
+      "results": [
+        "Sub-800ms retrieval and under-three-second end-to-end responses in the project benchmark.",
+        "One operator surface for ingestion, classification, summaries, search, QA history, and lifecycle actions.",
+        "MIT-licensed implementation with CI, typed contracts, deployment runbooks, and an openly accessible product tour."
+      ],
+      "lessons": [
+        "Evaluation belongs beside retrieval code, not in a separate demo notebook.",
+        "Citation UX is part of model reliability because it changes how people verify and act on answers.",
+        "A public demo can communicate a system honestly without exposing mutable infrastructure."
+      ],
+      "future": [
+        "Publish a redistributable labelled retrieval benchmark.",
+        "Evaluate dense and keyword fusion with reciprocal-rank fusion.",
+        "Add OpenTelemetry traces and provider latency and cost dashboards."
+      ],
+      "url": "https://moinuddin.app/work/doculens-ai"
+    },
+    {
+      "slug": "attest",
+      "title": "Attest",
+      "eyebrow": "Agentic retrieval · Self-verifying answers",
+      "year": "2026",
+      "summary": "An agentic RAG system that checks every generated claim against retrieved evidence, revises boundedly, and escalates uncertainty instead of smoothing it over.",
+      "thesis": "Grounded generation is not complete when a model cites something. It is complete when the system can verify the claim, measure the failure, and know when to ask for help.",
+      "role": "Builder · Retrieval, verification, evaluation, and backend reliability",
+      "metrics": [
+        {
+          "value": "4.15%",
+          "label": "failing citations after verification"
+        },
+        {
+          "value": "0.473",
+          "label": "evidence F1 on Qasper"
+        },
+        {
+          "value": "41",
+          "label": "questions in benchmark"
+        }
+      ],
+      "stack": [
+        "Python",
+        "LangGraph",
+        "FastAPI",
+        "PostgreSQL",
+        "pgvector",
+        "Redis"
+      ],
+      "screenshotsTitle": "Figures from the evaluation",
+      "links": [
+        {
+          "label": "Source",
+          "href": "https://github.com/CodeWithMoin/attest"
+        }
+      ],
+      "problem": "RAG systems can produce fluent answers whose citations do not actually support the claim being made. That makes a high-level answer score a poor proxy for whether a user can safely act on it.",
+      "why": "Evidence quality is a systems problem: retrieval, generation, verification, revision, and escalation all need explicit boundaries so uncertainty remains visible instead of becoming confident prose.",
+      "architecture": [
+        "Question",
+        "Hybrid retrieval",
+        "Reranking",
+        "Draft answer",
+        "Independent judge",
+        "Bounded revision",
+        "Human escalation"
+      ],
+      "architectureNote": "The judge model receives the claim and exact retrieved passages, not the generator's hidden reasoning. It can approve, request a bounded revision, or route the case to human review.",
+      "stageDetails": {
+        "Question": {
+          "role": "A user question that has to be answered from documents, not from the model's memory."
+        },
+        "Hybrid retrieval": {
+          "role": "pgvector similarity fused with PostgreSQL full-text search.",
+          "note": "Fusing before reranking lets exact terms and semantic matches both survive retrieval instead of one crowding the other out."
+        },
+        "Reranking": {
+          "role": "Orders the fused candidates so the passages that actually bear on the claim reach the generator."
+        },
+        "Draft answer": {
+          "role": "A first answer with citations attached — treated as a proposal, not a result."
+        },
+        "Independent judge": {
+          "role": "Scores whether each claim is supported by the exact passages retrieved.",
+          "note": "The judge sees the claim and the passages, never the generator's reasoning. Presence of a citation is not accepted as proof of grounding."
+        },
+        "Bounded revision": {
+          "role": "Revises within a fixed budget rather than looping until something looks confident.",
+          "note": "Verification cut failing citations from 9.87% to 4.15%."
+        },
+        "Human escalation": {
+          "role": "Where an answer goes when it cannot be supported — an explicit signal instead of confident prose."
+        }
+      },
+      "challenges": [
+        {
+          "title": "Verifying the exact claim",
+          "detail": "The system evaluates claim-to-passage support rather than treating the presence of a citation as proof of grounding."
+        },
+        {
+          "title": "Combining retrieval signals",
+          "detail": "pgvector similarity and PostgreSQL full-text search are fused before reranking so exact terms and semantic matches can both survive retrieval."
+        },
+        {
+          "title": "Making uncertainty actionable",
+          "detail": "Explicit metrics distinguish supported answers, unsupported claims, and cases that should be escalated rather than revised indefinitely."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "decision": "Independent judge over self-checking generation",
+          "rationale": "A separate verifier creates a meaningful failure boundary instead of asking the same generation path to grade itself."
+        },
+        {
+          "decision": "Bounded revision over open-ended reflection",
+          "rationale": "A fixed retry budget makes latency and cost predictable while preserving a clear escalation path."
+        },
+        {
+          "decision": "Evidence metrics over answer fluency",
+          "rationale": "The benchmark rewards support and calibrated failure, not only a readable final sentence."
+        }
+      ],
+      "experiments": [
+        "Compared citation failure rates before and after claim-level verification on a 41-question benchmark.",
+        "Evaluated hybrid retrieval and reranking against semantic retrieval alone.",
+        "Measured evidence F1 on human-annotated Qasper examples."
+      ],
+      "results": [
+        "Reduced failing citations from 9.87% to 4.15% after verification.",
+        "Reached 0.473 evidence F1 on the human-annotated Qasper benchmark.",
+        "Produced explicit escalation signals for unsupported answers and uncertain cases."
+      ],
+      "lessons": [
+        "A citation is a pointer; verification tests whether it actually supports the claim.",
+        "Retrieval quality and evaluator quality are coupled system dependencies.",
+        "Human escalation is a reliability feature when the system knows what it cannot prove."
+      ],
+      "future": [
+        "Expand claim decomposition for multi-part answers.",
+        "Publish a reproducible citation-verification benchmark.",
+        "Track verifier calibration and cost-quality tradeoffs across providers."
+      ],
+      "url": "https://moinuddin.app/work/attest"
+    },
+    {
+      "slug": "decode",
+      "title": "Decode",
+      "eyebrow": "Agentic educational video generation · Building",
+      "year": "2026",
+      "summary": "An AI-native system that turns natural-language concepts into explainable educational videos through specialized planning, teaching, scripting, motion, voice, and rendering agents.",
+      "thesis": "LLMs are useful for deciding what a lesson should show, but unreliable at low-level visual geometry. Decode separates semantic generation from deterministic visual execution.",
+      "role": "Builder · Multi-agent orchestration, visual execution, artifact lineage, and evaluation loops",
+      "metrics": [
+        {
+          "value": "Agents",
+          "label": "specialized roles, centrally orchestrated"
+        },
+        {
+          "value": "DAG",
+          "label": "incremental regeneration"
+        },
+        {
+          "value": "API",
+          "label": "deterministic visual primitives"
+        }
+      ],
+      "stack": [
+        "Python",
+        "FastAPI",
+        "React",
+        "Remotion",
+        "Redis",
+        "PostgreSQL"
+      ],
+      "screenshotsTitle": "Frames from a generated lesson",
+      "badges": [
+        {
+          "label": "Currently building",
+          "live": true
+        }
+      ],
+      "links": [
+        {
+          "label": "Live demo",
+          "href": "https://decode-ai.up.railway.app"
+        },
+        {
+          "label": "Source",
+          "href": "https://github.com/CodeWithMoin/decode"
+        }
+      ],
+      "problem": "A prompt such as “Explain backpropagation” requires more than a script. The system has to choose a teaching sequence, decide what appears on screen, lay out every component, synchronize narration and motion, and render a coherent video. Direct LLM-generated layouts repeatedly produced collisions, off-frame elements, incorrect coordinates, unpredictable text overflow, and poorly coordinated animation timing; repeated retries consumed tokens without fixing the underlying spatial reasoning problem.",
+      "why": "The useful separation is semantic versus geometric. Specialized agents can decide what to teach and what the viewer should see; a deterministic visual layer must decide where elements fit, whether they collide, how much room text needs, and when each word and animation should appear.",
+      "architecture": [
+        "Natural-language concept",
+        "Orchestrator",
+        "Production plan",
+        "Teaching plan",
+        "Script + motion + voice",
+        "Visual component API",
+        "Validation + correction",
+        "Renderer"
+      ],
+      "architectureNote": "The Orchestrator coordinates the Production Plan Generator, Teaching Plan Generator, Script Writer, Motion Designer, Voice, and Renderer. Versioned artifacts connect the stages. Content hashes and a dependency graph identify what changed, while the visual execution layer turns constrained primitives into validated coordinates, timing, and rendered scenes.",
+      "stageDetails": {
+        "Natural-language concept": {
+          "role": "The entire input. A prompt such as “Explain backpropagation”, with nothing else specified."
+        },
+        "Orchestrator": {
+          "role": "Coordinates every downstream generator and owns the artifact graph.",
+          "note": "Content hashes and a dependency graph identify what changed, so a revised upstream artifact only invalidates the work that actually depends on it."
+        },
+        "Production plan": {
+          "role": "Decides what the finished piece has to contain before a word is written."
+        },
+        "Teaching plan": {
+          "role": "Chooses the teaching sequence — what the viewer should see, and in what order."
+        },
+        "Script + motion + voice": {
+          "role": "Specialised agents write narration, choose motion, and produce audio against the teaching plan."
+        },
+        "Visual component API": {
+          "role": "The deterministic layer. Turns constrained primitives into validated coordinates, timing, and text measurement.",
+          "note": "This split is what the system rests on: agents decide what to teach, code decides where it fits, whether it collides, and when each word lands."
+        },
+        "Validation + correction": {
+          "role": "Checks boundaries, collisions, and text overflow, then corrects — rather than retrying the prompt.",
+          "note": "Unconstrained prompting produced collisions, off-frame elements, and bad timing. Better libraries did not help; retries burned tokens without fixing the spatial reasoning."
+        },
+        "Renderer": {
+          "role": "Renders the validated scenes to video."
+        }
+      },
+      "challenges": [
+        {
+          "title": "Converting intent into valid geometry",
+          "detail": "The visual component API owns coordinate transforms, collision and boundary detection, text bounding boxes, required text space, and frame-safe placement. The model selects constrained primitives instead of emitting arbitrary coordinates."
+        },
+        {
+          "title": "Coordinating speech and motion",
+          "detail": "Word-level timing aligns narration, on-screen text, and animation cues. Validation catches timing conflicts before a scene reaches the renderer."
+        },
+        {
+          "title": "Correcting invalid scenes without restarting",
+          "detail": "Visual self-checks and bounded correction loops repair invalid specifications. Artifact lineage and content-hash caching regenerate only affected downstream work."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "decision": "Constrained primitives over free-form layout generation",
+          "rationale": "The API narrows visual freedom, but makes geometry testable and prevents a large class of collisions, overflow, and boundary failures."
+        },
+        {
+          "decision": "Semantic agents over one end-to-end prompt",
+          "rationale": "Separate planning, teaching, scripting, motion, voice, and rendering artifacts expose intermediate decisions and allow one stage to be corrected independently."
+        },
+        {
+          "decision": "Incremental DAG execution over full regeneration",
+          "rationale": "Content hashes add bookkeeping, but prevent an edit to one scene from forcing unrelated work through the pipeline again."
+        }
+      ],
+      "experiments": [
+        "Tried unconstrained prompting and prompting the model to compose with Three.js and GSAP; access to better libraries did not make low-level layout reasoning reliable.",
+        "Compared free-form visual specifications with constrained visual primitives, boundary checks, and deterministic validation.",
+        "Changed upstream artifacts and verified that content hashes invalidate only dependent downstream work."
+      ],
+      "results": [
+        "Built a multi-agent product that turns natural-language questions into explainable educational video workflows.",
+        "Implemented a deterministic visual component API for layout, collision, boundaries, text measurement, word timing, and animation coordination.",
+        "Added visual validation, self-correction, DAG-based artifact lineage, and content-hash caching for incremental regeneration."
+      ],
+      "lessons": [
+        "LLMs are better at deciding what should be shown than reasoning directly about low-level visual geometry.",
+        "Validation is part of generation when outputs must satisfy spatial and temporal constraints.",
+        "Artifact lineage is useful when it enables selective repair, not merely observability."
+      ],
+      "future": [
+        "Add a validated extension path for visual primitives that the component library does not yet provide.",
+        "Build a repeatable evaluation set for visual composition and timing failures.",
+        "Add operator views for artifact diffs, invalidation, and correction history."
+      ],
+      "url": "https://moinuddin.app/work/decode"
+    },
+    {
+      "slug": "smart-turn",
+      "title": "Smart Turn",
+      "eyebrow": "Audio intelligence · Voice agents",
+      "year": "2026",
+      "summary": "A lightweight speech turn-completion detector built from the Whisper-tiny encoder for low-latency voice-agent handoffs in Hindi and English.",
+      "thesis": "A voice agent should respond when a person has finished a thought—not simply when the waveform becomes quiet.",
+      "role": "Builder · Model adaptation, bilingual evaluation, and ONNX inference",
+      "metrics": [
+        {
+          "value": "93.9%",
+          "label": "Hindi accuracy"
+        },
+        {
+          "value": "93.7%",
+          "label": "English accuracy"
+        },
+        {
+          "value": "~38ms",
+          "label": "per clip on CPU"
+        }
+      ],
+      "stack": [
+        "PyTorch",
+        "Whisper-tiny",
+        "Transformers",
+        "ONNX",
+        "Python"
+      ],
+      "screenshotsTitle": "Figures from the work",
+      "links": [
+        {
+          "label": "Source",
+          "href": "https://github.com/CodeWithMoin/smart-turn-hinglish"
+        }
+      ],
+      "problem": "Silence alone is an unreliable handoff signal for voice agents. People pause mid-thought, speak at different rates, and use language-specific phrasing that can make a fixed timeout either interrupt too early or respond too late.",
+      "why": "Turn completion sits directly on the interaction loop. A small, bilingual model that runs quickly on CPU can improve responsiveness without adding another remote inference dependency.",
+      "architecture": [
+        "8-second audio context",
+        "Whisper-tiny encoder",
+        "Attention pooling",
+        "Classification head",
+        "Single ONNX graph",
+        "Turn decision"
+      ],
+      "architectureNote": "The model reuses Whisper-tiny's speech representation, aggregates variable acoustic context with attention pooling, and emits a turn-completion decision through a lightweight classification head. The complete path is exported as one ONNX graph for CPU inference.",
+      "stageDetails": {
+        "8-second audio context": {
+          "role": "A rolling window of speech, long enough to catch a mid-thought pause.",
+          "note": "Silence alone is unreliable: people pause mid-thought, speak at different rates, and phrase turns differently by language, so a fixed timeout either interrupts or lags."
+        },
+        "Whisper-tiny encoder": {
+          "role": "Reuses an existing speech representation rather than training an acoustic model from scratch."
+        },
+        "Attention pooling": {
+          "role": "Aggregates a variable-length acoustic context into one fixed vector, weighting the moments that carry the turn signal."
+        },
+        "Classification head": {
+          "role": "A lightweight head over that vector — complete or not complete."
+        },
+        "Single ONNX graph": {
+          "role": "The whole path exported as one graph.",
+          "note": "One file means no separate preprocessing service to deploy or keep in sync, and no remote inference dependency on the interaction loop."
+        },
+        "Turn decision": {
+          "role": "The answer the voice agent acts on, in roughly 38ms per clip on CPU."
+        }
+      },
+      "challenges": [
+        {
+          "title": "Recognizing intent beyond silence",
+          "detail": "The classifier uses encoded speech context rather than a fixed pause threshold, allowing it to distinguish a completed utterance from a hesitation."
+        },
+        {
+          "title": "Holding quality across languages",
+          "detail": "Hindi and English are evaluated separately so aggregate accuracy cannot hide language-specific regressions."
+        },
+        {
+          "title": "Keeping the interaction loop fast",
+          "detail": "A compact Whisper-tiny backbone and single ONNX export keep inference local and predictable on CPU."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "decision": "Whisper-tiny over a larger speech encoder",
+          "rationale": "Turn detection needs useful representations at interaction latency; a larger backbone would increase the cost of every conversational handoff."
+        },
+        {
+          "decision": "Eight-second context window",
+          "rationale": "The window preserves enough recent speech structure for a completion decision while bounding inference work."
+        },
+        {
+          "decision": "Single ONNX graph over a multi-stage runtime",
+          "rationale": "One deployable graph reduces serving overhead and keeps preprocessing-to-decision latency easier to measure."
+        }
+      ],
+      "experiments": [
+        "Evaluated turn-completion accuracy independently on Hindi and English clips.",
+        "Measured CPU latency on the exported eight-second-context ONNX model.",
+        "Validated the encoder, attention pooling, and classification head as one inference graph."
+      ],
+      "results": [
+        "Reached 93.9% accuracy on Hindi and 93.7% on English.",
+        "Achieved approximately 38ms inference per clip on CPU.",
+        "Exported the full turn-detection path as a single ONNX graph."
+      ],
+      "lessons": [
+        "Conversational latency depends on deciding when to listen as much as how fast the response model runs.",
+        "Per-language evaluation is necessary for a bilingual interaction model.",
+        "A compact pretrained encoder can be adapted to a narrow product decision without carrying a full transcription pipeline."
+      ],
+      "future": [
+        "Evaluate noisier environments, accents, and longer conversational pauses.",
+        "Measure false interruption and delayed-response costs in a live voice-agent loop.",
+        "Calibrate confidence thresholds for different interaction styles."
+      ],
+      "url": "https://moinuddin.app/work/smart-turn"
+    },
+    {
+      "slug": "amazon-applied-science",
+      "title": "Autonomous Taxonomy Systems at Amazon",
+      "eyebrow": "Applied science · Public summary",
+      "year": "2026",
+      "summary": "A self-calibrating applied AI system that turns large-scale customer feedback into explainable three-level taxonomies—without a scientist hand-tuning every new domain.",
+      "thesis": "The hard part was not generating a hierarchy. It was replacing a multi-notebook expert workflow with a system that calibrates itself, beats the manual baseline, and explains its own quality.",
+      "role": "Applied Scientist Intern · Owned KIE self-service end to end; scope expanded to taxonomy generation, explainability, and first-author research",
+      "metrics": [
+        {
+          "value": "0.74",
+          "label": "F1 vs. 0.71 baseline"
+        },
+        {
+          "value": "<18h",
+          "label": "onboarding cycle"
+        },
+        {
+          "value": "2.7×",
+          "label": "faster extraction"
+        }
+      ],
+      "stack": [
+        "LLM systems",
+        "BERTopic",
+        "UMAP",
+        "HDBSCAN",
+        "Knowledge extraction",
+        "Taxonomy evaluation",
+        "AWS"
+      ],
+      "badges": [
+        {
+          "label": "Public summary only"
+        },
+        {
+          "label": "1 of ~200 interns across India · Amazon ML Summer School 2025"
+        }
+      ],
+      "links": [],
+      "problem": "Creating a taxonomy for a new feedback domain required a seven-notebook workflow: scientists selected examples, tuned prompts, ran clustering, and manually stitched a three-level hierarchy. Each domain consumed five to seven days of expert time and kept scientists in every step.",
+      "why": "Taxonomies determine which customer issues become visible to product teams. If onboarding remains expert-bound, scale stops at scientist availability; if the hierarchy overlaps or duplicates concepts, the resulting issue counts become misleading.",
+      "architecture": [
+        "Raw feedback",
+        "Self-calibrating KIE",
+        "Four-pillar evidence",
+        "BERTopic L3 discovery",
+        "LLM hierarchy induction",
+        "Grounded explainability"
+      ],
+      "architectureNote": "The public pattern is a two-phase system: mine and validate a small, diverse in-domain example set, then run cached batch extraction at scale. Structured phrases feed density-based L3 discovery; the LLM classifies those clusters into a disjoint hierarchy, while deterministic attribution computes every quality claim before the LLM renders it in plain language.",
+      "stageDetails": {
+        "Raw feedback": {
+          "role": "Millions of unstructured customer anecdotes for a domain nobody has modelled yet."
+        },
+        "Self-calibrating KIE": {
+          "role": "Mines and validates a small, diverse in-domain example set, then runs cached batch extraction at scale.",
+          "note": "Calibration sizes were swept from 10 to 1,000 examples rather than picking the pilot size by intuition. Compact in-domain few-shot won because it preserves domain-specific failure patterns."
+        },
+        "Four-pillar evidence": {
+          "role": "Structured phrases, grouped into the four pillars the taxonomy is built from.",
+          "note": "Ablating KIE entirely confirmed the need for this step: raw anecdotes were too noisy to form four coherent pillar taxonomies."
+        },
+        "BERTopic L3 discovery": {
+          "role": "Density-based clustering finds the leaf-level concepts, bottom-up, from the structured phrases."
+        },
+        "LLM hierarchy induction": {
+          "role": "Classifies those clusters into a disjoint three-level hierarchy.",
+          "note": "Direct one-shot prompting, bottom-up BERTopic, and top-down Leiden were compared against the same manual baseline and the same evaluation framework."
+        },
+        "Grounded explainability": {
+          "role": "Explains the taxonomy's own quality in plain language.",
+          "note": "Deterministic attribution computes every quality claim first; the LLM only renders what the arithmetic already established."
+        }
+      },
+      "challenges": [
+        {
+          "title": "Calibrating without labelled training data",
+          "detail": "The pipeline mines candidates from the target domain, checks every extraction against its source, ranks quality and structural diversity, and selects a compact few-shot set automatically."
+        },
+        {
+          "title": "Preserving context through clustering",
+          "detail": "Generic phrases collapsed unrelated products into catch-all clusters. Explicitly bracketing category and aspect fields restored the context the embedder needed to separate them."
+        },
+        {
+          "title": "Knowing where the LLM belongs",
+          "detail": "Recursive density clustering produced overlapping parent themes. The system pivoted to density discovery for L3 and constrained LLM classification for L1/L2, where model behavior was more reliable."
+        },
+        {
+          "title": "Explaining metrics without invented claims",
+          "detail": "Python identifies the exact node driving each quality score and validates paths and rankings. The LLM only translates grounded attribution into a concise explanation."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "decision": "KIE before taxonomy generation",
+          "rationale": "Directly embedding raw anecdotes lost the four distinct issue pillars and amplified noise. Structured extraction added a stage, but made downstream taxonomies separable and auditable."
+        },
+        {
+          "decision": "Two-model calibration and extraction",
+          "rationale": "A stronger judge is reserved for the quality-critical calibration step; a lower-cost extractor handles full-scale cached inference."
+        },
+        {
+          "decision": "Algorithms decide; the LLM communicates",
+          "rationale": "Deterministic code owns metric attribution and validation. The model is used for semantic labeling and readable language, not numerical truth."
+        }
+      ],
+      "experiments": [
+        "Ablated KIE entirely and confirmed that raw anecdotes were too noisy to form four coherent pillar taxonomies.",
+        "Compared zero-shot and few-shot extraction, plus in-domain and cross-domain examples; selected compact in-domain few-shot calibration to preserve domain-specific failure patterns.",
+        "Swept calibration sizes from 10 to 1,000 examples instead of choosing the pilot size by intuition.",
+        "Compared direct one-shot prompting, bottom-up BERTopic, and top-down Leiden against the same manual baseline and holistic evaluation framework."
+      ],
+      "results": [
+        "Reduced a five-to-seven-day scientist workflow to an autonomous run under 18 hours.",
+        "Improved taxonomy F1 from a 0.71 manual baseline to 0.73 with BERTopic and 0.74 with Leiden.",
+        "Reduced missing Category and Aspect extractions from roughly 23.8% to 0.7% in the documented evaluation.",
+        "Cut extraction time by 2.7× and inference cost by 53% through prompt caching and cross-region execution.",
+        "Shipped the KIE system as a production container for multi-domain, million-record workloads."
+      ],
+      "lessons": [
+        "LLMs were better at classifying discovered structure than discovering the structure itself.",
+        "Self-calibration is a product capability: it determines whether a new user can onboard a domain without a scientist.",
+        "An explainable metric needs deterministic attribution before fluent language.",
+        "A test-set improvement is not enough; production behavior still decides whether an idea survives."
+      ],
+      "future": [
+        "Complete production launch of the grounded metrics-explainability layer.",
+        "Extend calibration and hierarchy evaluation across more domains and drift patterns.",
+        "Connect structural quality measures to downstream issue-discovery decisions."
+      ],
+      "url": "https://moinuddin.app/work/amazon-applied-science"
+    },
+    {
+      "slug": "taxonomy-evaluation-research",
+      "title": "Evaluation for Taxonomies at Scale",
+      "eyebrow": "Research · UAM + LUMEN",
+      "year": "2026",
+      "summary": "Research on measuring hierarchical structure and robust LLM classification—from hundreds to thousands of categories.",
+      "thesis": "As label spaces grow, evaluation must distinguish genuine structure from duplicated concepts, brittle boundaries, and expensive model behavior.",
+      "role": "First author, UAM · Third author, LUMEN",
+      "metrics": [
+        {
+          "value": "621–5K",
+          "label": "category scale studied"
+        },
+        {
+          "value": "Up to 99%",
+          "label": "lower cost than Sonnet 4.5"
+        },
+        {
+          "value": "2",
+          "label": "2026 submissions"
+        }
+      ],
+      "stack": [
+        "LLM evaluation",
+        "NLP",
+        "Hierarchical clustering",
+        "Classification",
+        "Experiment design"
+      ],
+      "links": [],
+      "problem": "A taxonomy can look coherent while repeating the same idea across branches. At the same time, classification systems that work at small label counts can become costly or unstable as the taxonomy grows.",
+      "why": "Teams use taxonomies to aggregate evidence and decide what to fix. Structural duplication distorts counts, while classification cost can make an otherwise accurate system impractical.",
+      "architecture": [
+        "Raw anecdotes",
+        "Candidate hierarchy",
+        "Structural measures",
+        "Scale-aware classifier",
+        "Error analysis",
+        "Human-readable finding"
+      ],
+      "architectureNote": "UAM focuses on evaluating generated hierarchical structure and surfacing duplication. My LUMEN contribution focused on scaling taxonomies up and down and evaluating how classification quality, hallucination, and cost change as the label space grows.",
+      "stageDetails": {
+        "Raw anecdotes": {
+          "role": "Unstructured feedback, before any structure has been imposed on it."
+        },
+        "Candidate hierarchy": {
+          "role": "A generated three-level structure — the thing under evaluation, not the deliverable."
+        },
+        "Structural measures": {
+          "role": "Measures the shape of the hierarchy itself rather than only its labels.",
+          "note": "This is what surfaced a duplication failure mode previously hidden in human-built structures: overlapping concepts distort the issue counts teams act on."
+        },
+        "Scale-aware classifier": {
+          "role": "Classifies into that hierarchy across label spaces from 150 to 5,000.",
+          "note": "At 5,000 categories LUMEN reached 89.6 F1 against Sonnet 4.5's 89.4, at roughly 99% lower inference cost."
+        },
+        "Error analysis": {
+          "role": "Separates where quality degrades from where cost does, since they do not move together as the label space grows."
+        },
+        "Human-readable finding": {
+          "role": "The output that matters: a claim a team can act on, with the measurement behind it."
+        }
+      },
+      "challenges": [
+        {
+          "title": "Measuring hierarchy, not just labels",
+          "detail": "Designed analysis around parent-child structure, overlap, and duplicated concepts rather than only flat accuracy."
+        },
+        {
+          "title": "Holding comparisons fair",
+          "detail": "Contributed taxonomy-scaling experiments from 621 to 5,000 Clothing categories while keeping the input domain fixed, then compared quality and inference cost under increasing label-space complexity."
+        },
+        {
+          "title": "Turning anomalies into findings",
+          "detail": "Connected quantitative structure checks to a failure mode people could inspect and reason about."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "decision": "Interpretable measures over one composite score",
+          "rationale": "Separate signals made structural failure modes visible and actionable."
+        },
+        {
+          "decision": "Scale sweep over a single benchmark point",
+          "rationale": "A model that is practical at hundreds of classes may behave differently at thousands."
+        },
+        {
+          "decision": "Submission status stated explicitly",
+          "rationale": "The portfolio does not imply acceptance or publish details that are still under review."
+        }
+      ],
+      "experiments": [
+        "Compared hierarchy evaluation behavior across generated and human-constructed structures.",
+        "Contributed taxonomy-size sweeps that expanded the Clothing label space from 621 to 5,000 categories.",
+        "Compared LUMEN with Claude Sonnet 4.5 and Qwen baselines while tracking F1, hallucination, and inference cost."
+      ],
+      "results": [
+        "UAM identified a previously hidden duplication failure mode in human-built structures.",
+        "On Clothing, LUMEN reached 90.3 F1 versus Sonnet 4.5's 90.8 at the original taxonomy, with roughly 96% lower inference cost.",
+        "At 5,000 categories, LUMEN reached 89.6 F1 versus Sonnet 4.5's 89.4, with roughly 99% lower inference cost.",
+        "UAM is an AMLC 2026 submission with me as first author; LUMEN is an EMNLP 2026 submission with me as third author."
+      ],
+      "lessons": [
+        "Human-authored structure is a baseline, not ground truth beyond inspection.",
+        "Cost belongs in the scientific result when it changes deployability.",
+        "Error analysis is most valuable when it reveals a repeatable failure class."
+      ],
+      "future": [
+        "Release public artifacts when review and confidentiality constraints allow.",
+        "Extend structural measures to deeper and evolving hierarchies.",
+        "Study how taxonomy quality changes downstream prioritization decisions."
+      ],
+      "url": "https://moinuddin.app/work/taxonomy-evaluation-research"
+    },
+    {
+      "slug": "ecoguardian-ai",
+      "title": "EcoGuardian AI",
+      "eyebrow": "On-device applied ML",
+      "year": "2025",
+      "summary": "A mobile waste-classification prototype that brings fast, offline guidance to resource-constrained devices.",
+      "thesis": "The useful model is the one that fits the device, responds in the moment, and still clears an evidence-based quality bar.",
+      "role": "AI engineer · Model optimization and mobile product prototype",
+      "metrics": [
+        {
+          "value": "82%",
+          "label": "model accuracy"
+        },
+        {
+          "value": "<300ms",
+          "label": "on-device inference"
+        },
+        {
+          "value": "−60%",
+          "label": "model size"
+        }
+      ],
+      "stack": [
+        "TensorFlow Lite",
+        "React Native",
+        "Expo",
+        "Python",
+        "Appwrite"
+      ],
+      "links": [
+        {
+          "label": "Source",
+          "href": "https://github.com/CodeWithMoin/EcoGuardian-AI"
+        }
+      ],
+      "problem": "Waste-sorting guidance is most useful at the moment of disposal, but a cloud-dependent classifier adds latency, connectivity risk, and privacy cost to a simple decision.",
+      "why": "A phone-based system can make guidance immediate and accessible. Running locally also keeps camera input on device and makes the core classification flow available offline.",
+      "architecture": [
+        "Camera frame",
+        "Image preprocessing",
+        "Quantized TFLite model",
+        "Material class",
+        "Disposal guidance",
+        "Optional Appwrite sync"
+      ],
+      "architectureNote": "The classification path stays on device. Cloud services are separated for optional identity, persistence, and community features rather than required for inference.",
+      "stageDetails": {
+        "Camera frame": {
+          "role": "A single frame from the phone camera. It never leaves the device."
+        },
+        "Image preprocessing": {
+          "role": "Normalisation and resizing on-device, sized for the quantized model rather than a server."
+        },
+        "Quantized TFLite model": {
+          "role": "Classification running locally, 60% smaller after quantization.",
+          "note": "Keeping inference on-device is what makes the core flow work offline — and means camera input is never uploaded to classify it."
+        },
+        "Material class": {
+          "role": "Recyclable, compost, or landfill — 82% accurate in the project benchmark, under 300ms."
+        },
+        "Disposal guidance": {
+          "role": "The actionable part: what to actually do with the item."
+        },
+        "Optional Appwrite sync": {
+          "role": "Identity, persistence, and community features.",
+          "note": "Deliberately optional. Cloud is separated from the classification path so nothing essential breaks without a network."
+        }
+      },
+      "challenges": [
+        {
+          "title": "Fitting the model to the phone",
+          "detail": "Used post-training quantization to shrink the model while monitoring accuracy and latency together."
+        },
+        {
+          "title": "Designing for the camera loop",
+          "detail": "Structured the prototype around capture, review, classification, and clear disposal guidance instead of a generic ML result screen."
+        },
+        {
+          "title": "Keeping offline as the default",
+          "detail": "Separated inference from optional backend features so the core utility does not disappear with connectivity."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "decision": "Quantized model over maximum desktop accuracy",
+          "rationale": "Sub-300ms local feedback was part of the product requirement, not a later optimization."
+        },
+        {
+          "decision": "Three actionable categories",
+          "rationale": "Recycling, compost, and landfill map model output to a decision people can make immediately."
+        },
+        {
+          "decision": "Optional cloud services",
+          "rationale": "Community and history features can sync later without making core classification fragile."
+        }
+      ],
+      "experiments": [
+        "Measured accuracy after post-training quantization.",
+        "Benchmarked inference on the target mobile path rather than extrapolating from desktop performance.",
+        "Tested the product flow around a camera-first interaction and immediate guidance."
+      ],
+      "results": [
+        "Reached 82% classification accuracy in the project benchmark.",
+        "Reduced model size by 60% while keeping inference under 300ms.",
+        "Delivered a fully offline core classification experience."
+      ],
+      "lessons": [
+        "Latency and package size are model-quality dimensions on edge devices.",
+        "A constrained label space can produce a clearer product decision than a larger but ambiguous ontology.",
+        "Cloud independence is both a reliability and privacy feature."
+      ],
+      "future": [
+        "Validate on a broader, more representative image set.",
+        "Complete end-to-end inference wiring and field testing across target devices.",
+        "Add calibrated uncertainty and a safe fallback when the image is out of distribution."
+      ],
+      "url": "https://moinuddin.app/work/ecoguardian-ai"
+    },
+    {
+      "slug": "markalign",
+      "title": "MarkAlign",
+      "eyebrow": "Grading alignment · Evaluation",
+      "year": "2026",
+      "summary": "A grader that learns one teacher's marking standard from 25 essays, and an eval harness that decides whether it agreed for the right reason or got lucky.",
+      "thesis": "Anything can output a score. The hard problem is telling a grader that works from one that merely looks like it works.",
+      "role": "Creator · Evaluation design, grader profiling, calibration policy, and the eval harness",
+      "metrics": [
+        {
+          "value": "0.664",
+          "label": "QWK — 92% of the human-vs-human ceiling"
+        },
+        {
+          "value": "0.369 → 0.576",
+          "label": "calibrated QWK on a held-out second task"
+        },
+        {
+          "value": "3 / 3",
+          "label": "calibrate-or-not calls the diagnosis got right"
+        }
+      ],
+      "stack": [
+        "Python",
+        "FastAPI",
+        "Pydantic",
+        "LLM evaluation",
+        "Experiment design"
+      ],
+      "links": [
+        {
+          "label": "Live demo",
+          "href": "https://markalign.up.railway.app"
+        },
+        {
+          "label": "Source",
+          "href": "https://github.com/CodeWithMoin/markalign"
+        }
+      ],
+      "problem": "Putting an AI grader in front of student work fails on a question a score cannot answer: did it match the teacher for the right reason, or did it get lucky? A bare agreement number hides the difference between a grader with a fixable systematic bias and one that is simply noisy.",
+      "why": "Read against 1.0, every grader looks broken. Two trained human raters on this ASAP set agree at QWK 0.72, so the ceiling — not perfection — is the bar. Separating score-agreement from reasoning-agreement, and systematic bias from random noise, is the judgment the system is built to make legible.",
+      "architecture": [
+        "Teacher's marked essays",
+        "Profile builder",
+        "Per-trait checklist",
+        "Score-distribution floor",
+        "Blind grading",
+        "Held-out QWK",
+        "Bias diagnosis",
+        "Gated calibration"
+      ],
+      "architectureNote": "The profile builder learns a per-trait ladder of yes/no questions from the teacher's own examples, so the score is a count of passed bars rather than an ordinal judgement. Code counts how the teacher actually uses each trait's scale; that distribution enters the prompt as a floor. Diagnosis runs before calibration and decides whether calibration should run at all.",
+      "stageDetails": {
+        "Teacher's marked essays": {
+          "role": "25 calibration essays, already marked by the teacher whose standard is being learned."
+        },
+        "Profile builder": {
+          "role": "Derives what this teacher rewards and penalises, with evidence and strength attached.",
+          "note": "Learned from 25 essays with no fine-tuning."
+        },
+        "Per-trait checklist": {
+          "role": "Turns each trait into a ladder of yes/no questions; the score is the count of passed bars.",
+          "note": "LLM judges are unstable on ordinal scales but steady on binary decisions. This moved QWK from 0.585 to 0.656 — but its worst misses got worse, because the ladder had no floor."
+        },
+        "Score-distribution floor": {
+          "role": "Counts how the teacher actually uses each trait's scale, and states it as a constraint.",
+          "note": "Counting is code's job; noticing a distribution across 25 essays is what an LLM quietly fails at. Every metric moved the right way at once."
+        },
+        "Blind grading": {
+          "role": "Grades held-out essays without seeing the human mark."
+        },
+        "Held-out QWK": {
+          "role": "Agreement against the teacher, read against the 0.72 human-vs-human ceiling rather than against 1.0."
+        },
+        "Bias diagnosis": {
+          "role": "Separates a fixable systematic pattern from irreducible noise.",
+          "note": "A grader that ranks correctly but runs harsh and compressed is miscalibrated, not broken — a different problem with a different fix."
+        },
+        "Gated calibration": {
+          "role": "Applies a scale transform only when the diagnosis says to.",
+          "note": "The same transform that recovered a harsh grader (0.40 → 0.47) hurt one that already had healthy spread (0.585 → 0.478). Knowing when not to calibrate is the point."
+        }
+      },
+      "challenges": [
+        {
+          "title": "Ordinal instability",
+          "detail": "LLM judges are unstable asked to rate 0–3 but steady on binary decisions. Replacing the rating with a learned yes/no ladder, each rung pinned to a verbatim quote, moved QWK from 0.585 to 0.656."
+        },
+        {
+          "title": "A ladder with no floor",
+          "detail": "The checklist made the worst misses worse — within-1 agreement fell to 41% because weak essays took 0s a real teacher never gives. Counting the teacher's actual score distribution over the calibration set and stating it as a constraint fixed it without loosening the ladder."
+        },
+        {
+          "title": "Knowing when not to calibrate",
+          "detail": "The same scale transform that recovered a harsh, compressed grader (0.40 → 0.47) actively hurt one that already had healthy spread (0.585 → 0.478). Calibration had to become conditional on the diagnosis rather than a default step."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "decision": "Checklist scoring over direct rating",
+          "rationale": "Trades interpretive freedom for scale stability, and makes every point traceable to a quoted span."
+        },
+        {
+          "decision": "Diagnosis gates calibration",
+          "rationale": "A blanket calibration step would have degraded the strongest configuration; the rule only fires on a monotonic-but-shifted signature."
+        },
+        {
+          "decision": "Single held-out split, stated as such",
+          "rationale": "120 held-out essays on one split is a strong single run, not a cross-validated mean, and the write-up says so rather than implying more."
+        }
+      ],
+      "experiments": [
+        "Compared graders and prompt formats against the same held-out teacher marks, isolating the model swap from the prompt-format change.",
+        "Derived a per-trait score-distribution floor from the 25-essay calibration set and measured every metric moving together.",
+        "Re-ran the identical pipeline on ASAP set 1 — different genre, scale, and rater pair — and predicted the calibrate/don't-calibrate call before running it."
+      ],
+      "results": [
+        "QWK 0.664 against the teacher on ASAP set 7, 92% of the 0.72 human-vs-human ceiling, learning the standard from 25 essays with no fine-tuning.",
+        "On an unseen task type, diagnosis predicted the calibration case in advance: QWK 0.369 to 0.576, mean error roughly halved.",
+        "A deterministic mock mode with a deliberate length bias, so the harness can be run end to end with no API key and still catch a real systematic error."
+      ],
+      "lessons": [
+        "Counting is code's job. Noticing a distribution across 25 essays is exactly what an LLM quietly fails at.",
+        "A calibration step is a claim about the error, not a free improvement — applied blindly it degrades a healthy grader.",
+        "Reporting against the human ceiling rather than 1.0 changes which results look like progress."
+      ],
+      "future": [
+        "Establish cross-task teacher transfer, which needs the same identified grader on two assignments.",
+        "Promote the reasoning taxonomy from method to reported result with a larger adjudicated sample.",
+        "Cross-validate the headline number instead of relying on one held-out split."
+      ],
+      "url": "https://moinuddin.app/work/markalign"
+    },
+    {
+      "slug": "trellis",
+      "title": "Trellis",
+      "eyebrow": "Durable execution · Distributed systems",
+      "year": "2026",
+      "summary": "An Order → Payment → Shipping lifecycle on Temporal where every business step is deliberately unreliable, and the workflow finishes anyway.",
+      "thesis": "Reliability is not retry logic sprinkled over a request handler. It is a durable execution boundary that survives process loss, and a compensation path for the work that already succeeded.",
+      "role": "Builder · Workflow design, signal handling, compensation, and queue isolation",
+      "metrics": [
+        {
+          "value": "~2s",
+          "label": "end to end, against a 15s budget"
+        },
+        {
+          "value": "300s",
+          "label": "injected hang every step must survive"
+        },
+        {
+          "value": "2",
+          "label": "isolated task queues, separate worker processes"
+        }
+      ],
+      "stack": [
+        "Python",
+        "Temporal",
+        "FastAPI",
+        "PostgreSQL",
+        "Docker"
+      ],
+      "links": [
+        {
+          "label": "Source",
+          "href": "https://github.com/CodeWithMoin/trellis"
+        }
+      ],
+      "problem": "Every business step in the brief calls a function that randomly throws or sleeps for 300 seconds. A normal request handler either blocks on it, loses the work when the process dies, or leaves a payment charged against an order that never shipped.",
+      "why": "The interesting part is not retrying. It is what the system owes the customer when step three fails after step two took their money, and whether a human approval can be part of a workflow without a thread waiting on it.",
+      "architecture": [
+        "FastAPI start",
+        "OrderWorkflow",
+        "Validate",
+        "Manual-review gate",
+        "Charge",
+        "ShippingWorkflow child",
+        "Dispatch carrier",
+        "Compensate or complete"
+      ],
+      "architectureNote": "The manual-review gate is a durable timer racing a human approve_order signal — approve and it proceeds, let the timer win and the order cancels. Shipping is a child workflow on its own task queue in its own worker process, so it can be scaled or deployed independently; on exhausted retries it signals the parent, which restarts it up to a bound before compensating.",
+      "stageDetails": {
+        "FastAPI start": {
+          "role": "Accepts the order and hands it to the workflow engine rather than processing it in the request."
+        },
+        "OrderWorkflow": {
+          "role": "The durable parent. Survives process loss, because progress lives in the engine's event history, not in memory."
+        },
+        "Validate": {
+          "role": "First business step — and, like every step here, it may randomly throw or hang for 300 seconds."
+        },
+        "Manual-review gate": {
+          "role": "A durable timer raced against a human approve_order signal.",
+          "note": "Approve and it proceeds; let the timer win and the order cancels. No thread waits on the human, so an order can park here for as long as the business allows."
+        },
+        "Charge": {
+          "role": "Takes the money. Everything after this point has to reckon with the fact that it already happened."
+        },
+        "ShippingWorkflow child": {
+          "role": "A child workflow on its own task queue, in its own worker process.",
+          "note": "Queue isolation is only real when the child physically runs elsewhere — that is what stops shipping failures starving order processing."
+        },
+        "Dispatch carrier": {
+          "role": "The step most likely to genuinely fail.",
+          "note": "On exhausted retries it signals the parent, which restarts it up to a bound before giving up. Unbounded retry on a dead carrier turns a recoverable order into an indefinite one."
+        },
+        "Compensate or complete": {
+          "role": "Either the order ships, or the terminal state records the refund owed for a payment already taken."
+        }
+      },
+      "challenges": [
+        {
+          "title": "Human approval without a waiting thread",
+          "detail": "A durable timer raced against an inbound signal replaces the usual blocking call, so an order can park at manual review for as long as the business allows without holding any process open."
+        },
+        {
+          "title": "Compensation after partial success",
+          "detail": "Cancelling before shipment is honored, but if payment already went through the terminal state records the refund compensation rather than silently dropping the charge."
+        },
+        {
+          "title": "Failure isolation across queues",
+          "detail": "Two workers polling two queues means shipping failures cannot starve order processing, and the child physically runs in a different process."
+        }
+      ],
+      "tradeoffs": [
+        {
+          "decision": "Child workflow over an inline activity",
+          "rationale": "Costs an extra queue and worker, buys independent scaling and a failure boundary that shows up in the event history."
+        },
+        {
+          "decision": "Bounded restarts before compensating",
+          "rationale": "Unbounded retry on a genuinely dead carrier turns a recoverable order into an indefinite one; the bound forces a decision."
+        },
+        {
+          "decision": "Postgres for application state, Temporal for execution state",
+          "rationale": "Keeps the workflow engine authoritative about progress without making it the system of record for orders."
+        }
+      ],
+      "experiments": [
+        "Ran the full lifecycle repeatedly against injected random failures and 300-second hangs to confirm the time budget held.",
+        "Exercised cancel, address-update, approve, and dispatch-failed signals against workflows parked at different steps.",
+        "Forced carrier dispatch to exhaust its retries to verify the parent restart bound and the compensation path."
+      ],
+      "results": [
+        "Completes in about two seconds against a 15-second budget despite a random throw-or-hang on every business step.",
+        "Live status query reporting the current step, flags, per-activity retry counts, and the last error.",
+        "Whole stack reproducible with one docker compose command — Temporal server, Postgres, two workers, and the API."
+      ],
+      "lessons": [
+        "A durable timer racing a signal removes a whole class of state machine that would otherwise need its own storage.",
+        "Queue isolation is only real when the child runs in a different process, not just under a different name.",
+        "Event history is the observability story; reading it top to bottom explains the run better than any log line."
+      ],
+      "future": [
+        "Add idempotency keys on the payment activity so a duplicated start cannot double-charge.",
+        "Model the refund as a first-class compensating workflow rather than a terminal-state record.",
+        "Load-test queue isolation under a sustained shipping backlog."
+      ],
+      "url": "https://moinuddin.app/work/trellis"
+    }
+  ],
+  "publications": [
+    {
+      "title": "Universal Anecdote Miner (UAM)",
+      "venue": "Amazon ML Conference · 2026",
+      "role": "First author",
+      "status": "Submitted",
+      "abstract": "A framework for evaluating how automated systems construct hierarchical structure from raw feedback, including analysis of a subtle duplication failure mode in human-built taxonomies.",
+      "caseStudy": {
+        "label": "The system behind it",
+        "slug": "amazon-applied-science"
+      }
+    },
+    {
+      "title": "LUMEN: Robust LLM Classification Across Taxonomy Scales",
+      "venue": "EMNLP · 2026",
+      "role": "Third author",
+      "status": "Submitted",
+      "abstract": "A scale-aware classification study spanning 150 to 5,000 labels. I contributed the taxonomy-scaling experiments; on Clothing, LUMEN maintained Claude-competitive F1 at up to 99% lower inference cost than Sonnet 4.5.",
+      "caseStudy": {
+        "label": "The experiments",
+        "slug": "taxonomy-evaluation-research"
+      }
+    }
+  ],
+  "references": [
+    {
+      "quoteFull": "I mentored Moin during his Amazon internship. He worked on using LLMs for taxonomy use cases, he is a remarkably quick learner who brings new ideas and executes them fast.",
+      "name": "Manan Soni",
+      "role": "Applied Scientist II at Amazon",
+      "relation": "Mentored Moin during the internship"
+    },
+    {
+      "quoteFull": "I had the pleasure of working with Moin during his internship. His passion for solving complex problems stood out from day one. He took on a genuinely challenging project and delivered real impact, backing every decision with thoughtful, well-run experiments. Any team would be lucky to have someone with his curiosity, ownership, and drive to dive deep, invent, and simplify.",
+      "name": "Sachin Giroh",
+      "role": "Applied Scientist at Amazon",
+      "relation": "Worked with Moin on the same team at Amazon"
+    }
+  ],
+  "beforeAI": [
+    {
+      "id": "video",
+      "headline": "200+ video clients, from age 15",
+      "detail": "Cinematic editing and motion graphics — Fiverr first, then direct, over roughly five years alongside school and college. 4.9 across 117 reviews. Nobody assigned it: he found the work, taught himself the craft, and delivered to a brief on a deadline for people who were paying.",
+      "stats": [
+        {
+          "value": "4.9",
+          "label": "across 117 Fiverr reviews"
+        },
+        {
+          "value": "200+",
+          "label": "clients over roughly five years"
+        },
+        {
+          "value": "15",
+          "label": "age he started, on his sister's account"
+        }
+      ]
+    },
+    {
+      "id": "badminton",
+      "headline": "Student Nationals silver, doubles",
+      "detail": "Picked up badminton at 11, competed at state level, took a doubles silver at Student Nationals in 2018. Lockdown ended it — but it was the first time getting good at something was measured by someone other than him.",
+      "stats": [
+        {
+          "value": "11",
+          "label": "age he started"
+        },
+        {
+          "value": "2018",
+          "label": "Nationals silver"
+        },
+        {
+          "value": "State",
+          "label": "level competed at"
+        }
+      ]
+    }
+  ]
+}
