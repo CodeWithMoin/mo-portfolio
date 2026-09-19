@@ -28,7 +28,19 @@
   --border: rgba(13, 13, 12, 0.08);
   --accent: #ff5a1f;
   --status: #22c55e;
-  --card-shadow: 0 2px 3px rgba(13, 13, 12, 0.02), 0 12px 32px rgba(13, 13, 12, 0.04);
+  /* Layered, not blurred: a tight contact shadow, a mid one, and a wide soft one read
+     as an object resting on the page. The inset line is the lit top edge. */
+  --card-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 1px 1px rgba(13, 13, 12, 0.03),
+    0 3px 6px -2px rgba(13, 13, 12, 0.04),
+    0 14px 28px -10px rgba(13, 13, 12, 0.08);
+  --card-shadow-hover:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 3px rgba(13, 13, 12, 0.04),
+    0 10px 18px -6px rgba(13, 13, 12, 0.08),
+    0 32px 56px -18px rgba(13, 13, 12, 0.16);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --nav-shadow: 0 4px 16px rgba(13, 13, 12, 0.06);
   --font-geist-sans: "Geist";
   --font-geist-mono: "Geist Mono";
@@ -92,12 +104,25 @@ button {
   background-size: 28px 28px;
 }
 
+/* The grid is strongest behind the diagram and gone by the caption, so body text
+   never has to be read through lines. */
 .bg-grid {
-  background-color: var(--surface);
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(180deg, #ffffff 0%, var(--surface) 60%);
+}
+.bg-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
   background-image:
     linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size: 32px 32px;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 30%, transparent 78%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 30%, transparent 78%);
 }
 
 .research-card {
@@ -130,4 +155,292 @@ button {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* The header is fixed, so an anchored section would otherwise land underneath it.
+   This also keeps the target clear of Reveal's -72px in-view inset, which would
+   leave a section pinned to the very top of the viewport stuck at opacity 0. */
+[data-section] {
+  scroll-margin-top: 7rem;
+}
+
+/* Section numbers come from the per-audience rules generated in app/layout.tsx. */
+.section-index::before {
+  content: var(--section-index, "");
+}
+
+/* Mode-switch curtain. The provider sets data-switching, swaps the section order
+   while the flow is invisible, then clears it. Out is quicker than in on purpose:
+   leaving should be brisk, arriving should settle. */
+.section-flow {
+  transition: opacity 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+html[data-switching] .section-flow {
+  opacity: 0;
+  transition-duration: 0.18s;
+}
+
+/* Hero variants share one grid cell; the mode on <html> decides which is showing.
+   The hidden one leaves the accessibility tree and tab order via visibility, and
+   its visibility flips only after it has faded, so the outgoing claim fades out
+   instead of vanishing. */
+[data-hero-variant] {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.22s ease, visibility 0s linear 0.22s;
+}
+html[data-audience="recruiter"] [data-hero-variant="recruiter"],
+html[data-audience="founder"] [data-hero-variant="founder"] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.16s, visibility 0s;
+}
+
+/* ------------------------------------------------------------------ materials --
+   One definition of "a card" for the whole site. Flat fills plus a thin border read
+   as wireframe; a faint top-lit gradient and a layered shadow read as an object. */
+.material {
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #ffffff 0%, var(--surface) 46%, #f6f6f4 100%);
+  box-shadow: var(--card-shadow);
+}
+
+/* Interactive surfaces rise toward the pointer. Small on purpose: 3px and a deeper
+   shadow is felt, not noticed. */
+.lift {
+  transition:
+    transform 0.45s var(--ease-out),
+    box-shadow 0.45s var(--ease-out),
+    border-color 0.25s ease;
+}
+.lift:hover,
+.group:hover > .lift {
+  transform: translateY(-3px);
+  box-shadow: var(--card-shadow-hover);
+  border-color: color-mix(in srgb, var(--foreground) 16%, transparent);
+}
+
+/* Buttons. "Ink" is the primary: a near-black with a lit top edge and a shadow that
+   carries its own colour, so it sits on the page rather than being printed on it. */
+.btn-ink {
+  border: 1px solid #000;
+  background: linear-gradient(180deg, #32322f 0%, #161614 38%, var(--foreground) 100%);
+  color: var(--background);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 1px 2px rgba(13, 13, 12, 0.35),
+    0 8px 18px -6px rgba(13, 13, 12, 0.4);
+}
+.btn-paper {
+  border: 1px solid color-mix(in srgb, var(--foreground) 11%, transparent);
+  background: linear-gradient(180deg, #ffffff 0%, #f7f7f5 100%);
+  color: var(--foreground);
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 1px 2px rgba(13, 13, 12, 0.05),
+    0 5px 12px -5px rgba(13, 13, 12, 0.1);
+}
+.btn-ink,
+.btn-paper {
+  transition:
+    transform 0.35s var(--ease-out),
+    box-shadow 0.35s var(--ease-out),
+    filter 0.2s ease;
+}
+.btn-ink:hover,
+.btn-paper:hover {
+  transform: translateY(-1.5px);
+}
+.btn-ink:hover {
+  filter: brightness(1.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 3px rgba(13, 13, 12, 0.35),
+    0 14px 26px -8px rgba(13, 13, 12, 0.5);
+}
+.btn-paper:hover {
+  box-shadow:
+    inset 0 1px 0 #ffffff,
+    0 2px 3px rgba(13, 13, 12, 0.06),
+    0 10px 20px -8px rgba(13, 13, 12, 0.16);
+}
+.btn-ink:active,
+.btn-paper:active {
+  transform: translateY(0) scale(0.985);
+}
+
+/* Card pictures. Hover-only, and only where hover exists: on touch the first image
+   simply stays. The second view cross-fades in while both drift up a little, which
+   reads as the product being scrolled rather than a slide being swapped. */
+.card-media {
+  transition:
+    transform 0.9s var(--ease-out),
+    opacity 0.45s ease;
+}
+.card-media-alt {
+  opacity: 0;
+}
+@media (hover: hover) {
+  .group:hover .card-media {
+    transform: scale(1.035);
+  }
+  .group:hover .card-media-alt {
+    opacity: 1;
+  }
+}
+
+/* The arrow in a link or button leans the way it points. */
+.nudge {
+  display: inline-block;
+  transition: transform 0.35s var(--ease-out);
+}
+a:hover .nudge,
+button:hover .nudge,
+.group:hover .nudge {
+  transform: translate(2px, -2px);
+}
+
+/* ----------------------------------------------------------------- atmosphere --
+   The page was one flat colour edge to edge. This is light, not decoration: a warm
+   glow where the eye should land, and a dot grid that dissolves before it can turn
+   into a pattern. Both are static, so they cost nothing to paint after the first frame. */
+.atmosphere {
+  position: absolute;
+  /* Full-bleed from inside a centred column: the light should not stop at the
+     content's edge. <main> clips horizontal overflow, so this cannot cause scroll. */
+  top: 0;
+  left: 50%;
+  width: 100vw;
+  margin-left: -50vw;
+  height: 60rem;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(46rem 30rem at 76% 20%, color-mix(in srgb, var(--accent) var(--glow, 11%), transparent), transparent 70%),
+    radial-gradient(40rem 26rem at 8% 0%, rgba(255, 255, 255, 0.9), transparent 70%);
+}
+.atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--foreground) 13%, transparent) 1px, transparent 1.2px);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(52rem 34rem at 72% 26%, #000 0%, transparent 72%);
+  mask-image: radial-gradient(52rem 34rem at 72% 26%, #000 0%, transparent 72%);
+}
+
+/* On a phone the desktop ellipse is wider than the screen, so the whole hero — headline
+   included — sat in a pink wash. Pull the light into the top-right corner instead. */
+@media (max-width: 640px) {
+  .atmosphere {
+    height: 40rem;
+    background:
+      radial-gradient(24rem 22rem at 100% 10%, color-mix(in srgb, var(--accent) var(--glow, 11%), transparent), transparent 70%),
+      radial-gradient(20rem 16rem at 0% 0%, rgba(255, 255, 255, 0.9), transparent 70%);
+  }
+  .atmosphere::after {
+    -webkit-mask-image: radial-gradient(26rem 24rem at 100% 8%, #000 0%, transparent 72%);
+    mask-image: radial-gradient(26rem 24rem at 100% 8%, #000 0%, transparent 72%);
+  }
+}
+
+/* The one dark surface: lit from a corner, with a grid just visible enough to give
+   the black some depth instead of reading as a hole in the page. */
+.panel-ink {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(44rem 24rem at 88% -10%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 62%),
+    radial-gradient(36rem 22rem at 0% 110%, rgba(255, 255, 255, 0.07), transparent 60%),
+    linear-gradient(180deg, #1b1b19 0%, var(--foreground) 60%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 40px 80px -30px rgba(13, 13, 12, 0.55);
+}
+.panel-ink::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(60rem 30rem at 85% 0%, #000, transparent 75%);
+  mask-image: radial-gradient(60rem 30rem at 85% 0%, #000, transparent 75%);
+}
+
+/* A recessed surface inside a card: header strips, the lead card's text panel. Lit
+   from above like everything else, but pressed in rather than raised. */
+.well {
+  background: linear-gradient(180deg, #f0f0ee 0%, #ebebe8 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 0 0 1px rgba(13, 13, 12, 0.035);
+}
+
+/* Veils: what sits behind the floating header and dock. A colour fade alone let
+   scrolled text stay legible underneath the nav; a blur that is masked to nothing
+   dissolves it instead, with no visible edge — so it never reads as a glass bar. */
+.veil-top,
+.veil-bottom {
+  -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(9px);
+}
+.veil-top {
+  background: linear-gradient(to bottom, var(--background) 0%, color-mix(in srgb, var(--background) 80%, transparent) 50%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
+}
+.veil-bottom {
+  background: linear-gradient(to top, var(--background) 0%, color-mix(in srgb, var(--background) 82%, transparent) 50%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, #000 0%, #000 50%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 0%, #000 50%, transparent 100%);
+}
+
+/* The side chat. It rises out of the button that opened it — up from the bottom-right
+   corner on desktop, up from the bottom edge on a phone — so the motion says where it
+   came from and where it goes back to. Visibility flips only after it has closed, so
+   it is never reachable (or read by a screen reader) while hidden. */
+.side-panel {
+  transform: translateY(104%);
+  visibility: hidden;
+  transition:
+    transform 0.5s var(--ease-out),
+    opacity 0.3s ease,
+    visibility 0s linear 0.5s;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 4px 8px rgba(13, 13, 12, 0.04),
+    0 24px 48px -12px rgba(13, 13, 12, 0.18),
+    0 60px 120px -30px rgba(13, 13, 12, 0.28);
+}
+@media (min-width: 640px) {
+  .side-panel {
+    transform-origin: bottom right;
+    transform: translateY(2.5rem) scale(0.96);
+    opacity: 0;
+  }
+}
+.side-panel[data-open="true"] {
+  transform: none;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    transform 0.5s var(--ease-out),
+    opacity 0.3s ease,
+    visibility 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .side-panel,
+  .side-panel[data-open="true"] {
+    transition: none;
+  }
+}
+
+/* Scrollbar: present, quiet, on-palette. */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--foreground) 22%, transparent) transparent;
 }

@@ -13,7 +13,9 @@ pnpm-debug.log*
 .DS_Store
 *.tsbuildinfo
 
-# Local tooling state (Claude Code, oh-my-claudecode, Serena) — not project code
+# Local tooling state (Claude Code, oh-my-claudecode, Serena, agent skills) — not project code
 .claude/
 .omc/
 .serena/
+.agents/
+skills-lock.json

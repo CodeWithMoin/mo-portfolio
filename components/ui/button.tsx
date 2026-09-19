@@ -10,13 +10,13 @@ type ButtonProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
 
 export function Button({ children, className, href, variant = "primary", ...props }: ButtonProps) {
   const styles = {
-    primary: "border-foreground bg-foreground text-background hover:opacity-90",
-    secondary: "border-border bg-surface text-foreground hover:border-foreground/25 hover:bg-surface-raised",
+    primary: "btn-ink",
+    secondary: "btn-paper",
     ghost: "border-transparent bg-transparent text-muted hover:text-foreground",
   };
 
   const classes = cn(
-    "inline-flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full border px-5 text-sm font-medium transition duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "inline-flex min-h-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     styles[variant],
     className,
   );
