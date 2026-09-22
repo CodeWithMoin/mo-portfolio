@@ -391,6 +391,16 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   void pump();
 
   return new Response(readable, {
-    headers: { ...BASE_HEADERS, "content-type": "text/plain; charset=utf-8", "x-ask-model": model, "x-ask-provider": provider, ...quotaHeaders },
+    headers: {
+      ...BASE_HEADERS,
+      "content-type": "text/plain; charset=utf-8",
+      // Cloudflare would otherwise Brotli-compress this, and compression buffers the
+      // stream until it has enough bytes — the visitor saw whole answers land at once.
+      "cache-control": "no-store, no-transform",
+      "content-encoding": "identity",
+      "x-ask-model": model,
+      "x-ask-provider": provider,
+      ...quotaHeaders,
+    },
   });
 };
