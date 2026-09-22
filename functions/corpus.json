@@ -1,10 +1,58 @@
 {
   "profile": {
     "name": "Moinuddin Shaik",
+    "fullName": "Khaja Moinuddin Shaik Mohammed",
+    "goesBy": "Moin",
     "role": "AI Engineer · Applied Scientist",
     "tagline": "Builds AI systems and the evaluation that proves they work.",
     "location": "Hyderabad, India",
-    "education": "B.Tech, Computer Science (AI & ML), 9.09 / 10",
+    "education": {
+      "degree": "B.Tech, Computer Science (AI & ML)",
+      "grade": "GPA 9.09 / 10",
+      "institution": "Mahatma Gandhi Institute of Technology",
+      "location": "Hyderabad, India",
+      "period": "Oct 2022 – Jul 2026"
+    },
+    "honors": [
+      "Amazon ML Summer School 2025 — 3,000 selected from 165,000+ applicants (~top 2%)"
+    ],
+    "skills": {
+      "languages": [
+        "Python",
+        "TypeScript",
+        "SQL",
+        "C++",
+        "Java"
+      ],
+      "ai": [
+        "LLMs",
+        "RAG",
+        "AI agents",
+        "Multi-agent orchestration",
+        "LangGraph",
+        "PyTorch",
+        "Transformers",
+        "NLP",
+        "Speech"
+      ],
+      "productAndBackend": [
+        "FastAPI",
+        "React",
+        "PostgreSQL",
+        "Redis",
+        "REST APIs",
+        "SSE",
+        "Async Python",
+        "Docker"
+      ],
+      "infrastructure": [
+        "AWS (Bedrock, SageMaker, S3, EC2)",
+        "GCP",
+        "Git",
+        "Langfuse",
+        "ONNX"
+      ]
+    },
     "currently": "Building AI-native products and first-author research",
     "openTo": "Applied Scientist, ML Systems, and early-stage AI engineering roles",
     "focus": [
@@ -20,6 +68,134 @@
       "resume": "https://moinuddin.app/Moinuddin_Shaik_Resume.pdf"
     }
   },
+  "capabilities": [
+    {
+      "id": "ai-products",
+      "title": "AI products",
+      "blurb": "Whole systems someone can actually use, not a notebook with a demo cell.",
+      "slugs": [
+        "doculens-ai",
+        "decode",
+        "ecoguardian-ai"
+      ],
+      "projects": [
+        "DocuLens AI",
+        "Decode",
+        "EcoGuardian AI"
+      ]
+    },
+    {
+      "id": "evaluation",
+      "title": "Evaluation",
+      "blurb": "Deciding whether a model works, and whether it worked for the right reason.",
+      "slugs": [
+        "markalign",
+        "attest",
+        "taxonomy-evaluation-research"
+      ],
+      "projects": [
+        "MarkAlign",
+        "Attest",
+        "Evaluation for Taxonomies at Scale"
+      ]
+    },
+    {
+      "id": "applied-ml",
+      "title": "Applied ML",
+      "blurb": "Models trained and tuned against a real constraint — latency, cost, or a device with no GPU.",
+      "slugs": [
+        "smart-turn",
+        "amazon-applied-science",
+        "ecoguardian-ai"
+      ],
+      "projects": [
+        "Smart Turn",
+        "Autonomous Taxonomy Systems at Amazon",
+        "EcoGuardian AI"
+      ]
+    },
+    {
+      "id": "backends",
+      "title": "Production backends",
+      "blurb": "Durable execution, typed contracts, and the failure paths that decide what users lose.",
+      "slugs": [
+        "trellis",
+        "doculens-ai",
+        "decode"
+      ],
+      "projects": [
+        "Trellis",
+        "DocuLens AI",
+        "Decode"
+      ]
+    }
+  ],
+  "stack": [
+    {
+      "group": "ML & modelling",
+      "note": "Training, fine-tuning, and evaluation",
+      "tools": [
+        "PyTorch",
+        "Transformers",
+        "TensorFlow Lite",
+        "ONNX",
+        "Whisper-tiny",
+        "BERTopic",
+        "UMAP",
+        "HDBSCAN"
+      ]
+    },
+    {
+      "group": "Methods",
+      "note": "How the work is done, not what it is done with",
+      "tools": [
+        "Experiment design",
+        "Classification",
+        "Hierarchical clustering",
+        "NLP",
+        "LLM evaluation",
+        "Taxonomy evaluation",
+        "Knowledge extraction"
+      ]
+    },
+    {
+      "group": "LLM systems",
+      "note": "Retrieval, agents, and the evaluation around them",
+      "tools": [
+        "LangGraph",
+        "pgvector",
+        "Docling",
+        "LLM systems"
+      ]
+    },
+    {
+      "group": "Backend & data",
+      "note": "The services the models actually run inside",
+      "tools": [
+        "Python",
+        "FastAPI",
+        "PostgreSQL",
+        "Redis",
+        "Celery",
+        "Temporal",
+        "Docker",
+        "Pydantic",
+        "AWS",
+        "Appwrite"
+      ]
+    },
+    {
+      "group": "Interfaces",
+      "note": "Where the output has to be legible to a person",
+      "tools": [
+        "React",
+        "React 19",
+        "React Native",
+        "Expo",
+        "Remotion"
+      ]
+    }
+  ],
   "experience": [
     {
       "company": "Amazon",
@@ -201,31 +377,6 @@
         "Grounded answer"
       ],
       "architectureNote": "The event record is the durable boundary between HTTP and model work. Workers can retry slow extraction or provider calls without holding request threads, while typed pipeline contexts preserve an audit trail.",
-      "stageDetails": {
-        "React console": {
-          "role": "The operator surface: ingestion, classification, summaries, search, QA history, and lifecycle actions."
-        },
-        "FastAPI gateway": {
-          "role": "Acknowledges work quickly and hands it to durable storage instead of holding the request open."
-        },
-        "Durable event": {
-          "role": "The durable boundary between HTTP and model work.",
-          "note": "Workers can retry slow extraction or a slow provider without a request thread waiting on them."
-        },
-        "Celery worker": {
-          "role": "Bounded execution, late acknowledgement, and worker-loss recovery."
-        },
-        "Docling + chunks": {
-          "role": "Layout-aware extraction, chunked by tokens while preserving page provenance."
-        },
-        "pgvector retrieval": {
-          "role": "Dense-first retrieval.",
-          "note": "Every vector carries document, chunk, page, title, and token metadata, so a citation survives ingestion, retrieval, and generation."
-        },
-        "Grounded answer": {
-          "role": "The answer plus the page that supports it, so a reader can audit the claim instead of trusting it."
-        }
-      },
       "challenges": [
         {
           "title": "Preserving evidence",
@@ -325,32 +476,6 @@
         "Human escalation"
       ],
       "architectureNote": "The judge model receives the claim and exact retrieved passages, not the generator's hidden reasoning. It can approve, request a bounded revision, or route the case to human review.",
-      "stageDetails": {
-        "Question": {
-          "role": "A user question that has to be answered from documents, not from the model's memory."
-        },
-        "Hybrid retrieval": {
-          "role": "pgvector similarity fused with PostgreSQL full-text search.",
-          "note": "Fusing before reranking lets exact terms and semantic matches both survive retrieval instead of one crowding the other out."
-        },
-        "Reranking": {
-          "role": "Orders the fused candidates so the passages that actually bear on the claim reach the generator."
-        },
-        "Draft answer": {
-          "role": "A first answer with citations attached — treated as a proposal, not a result."
-        },
-        "Independent judge": {
-          "role": "Scores whether each claim is supported by the exact passages retrieved.",
-          "note": "The judge sees the claim and the passages, never the generator's reasoning. Presence of a citation is not accepted as proof of grounding."
-        },
-        "Bounded revision": {
-          "role": "Revises within a fixed budget rather than looping until something looks confident.",
-          "note": "Verification cut failing citations from 9.87% to 4.15%."
-        },
-        "Human escalation": {
-          "role": "Where an answer goes when it cannot be supported — an explicit signal instead of confident prose."
-        }
-      },
       "challenges": [
         {
           "title": "Verifying the exact claim",
@@ -461,35 +586,6 @@
         "Renderer"
       ],
       "architectureNote": "The Orchestrator coordinates the Production Plan Generator, Teaching Plan Generator, Script Writer, Motion Designer, Voice, and Renderer. Versioned artifacts connect the stages. Content hashes and a dependency graph identify what changed, while the visual execution layer turns constrained primitives into validated coordinates, timing, and rendered scenes.",
-      "stageDetails": {
-        "Natural-language concept": {
-          "role": "The entire input. A prompt such as “Explain backpropagation”, with nothing else specified."
-        },
-        "Orchestrator": {
-          "role": "Coordinates every downstream generator and owns the artifact graph.",
-          "note": "Content hashes and a dependency graph identify what changed, so a revised upstream artifact only invalidates the work that actually depends on it."
-        },
-        "Production plan": {
-          "role": "Decides what the finished piece has to contain before a word is written."
-        },
-        "Teaching plan": {
-          "role": "Chooses the teaching sequence — what the viewer should see, and in what order."
-        },
-        "Script + motion + voice": {
-          "role": "Specialised agents write narration, choose motion, and produce audio against the teaching plan."
-        },
-        "Visual component API": {
-          "role": "The deterministic layer. Turns constrained primitives into validated coordinates, timing, and text measurement.",
-          "note": "This split is what the system rests on: agents decide what to teach, code decides where it fits, whether it collides, and when each word lands."
-        },
-        "Validation + correction": {
-          "role": "Checks boundaries, collisions, and text overflow, then corrects — rather than retrying the prompt.",
-          "note": "Unconstrained prompting produced collisions, off-frame elements, and bad timing. Better libraries did not help; retries burned tokens without fixing the spatial reasoning."
-        },
-        "Renderer": {
-          "role": "Renders the validated scenes to video."
-        }
-      },
       "challenges": [
         {
           "title": "Converting intent into valid geometry",
@@ -587,28 +683,6 @@
         "Turn decision"
       ],
       "architectureNote": "The model reuses Whisper-tiny's speech representation, aggregates variable acoustic context with attention pooling, and emits a turn-completion decision through a lightweight classification head. The complete path is exported as one ONNX graph for CPU inference.",
-      "stageDetails": {
-        "8-second audio context": {
-          "role": "A rolling window of speech, long enough to catch a mid-thought pause.",
-          "note": "Silence alone is unreliable: people pause mid-thought, speak at different rates, and phrase turns differently by language, so a fixed timeout either interrupts or lags."
-        },
-        "Whisper-tiny encoder": {
-          "role": "Reuses an existing speech representation rather than training an acoustic model from scratch."
-        },
-        "Attention pooling": {
-          "role": "Aggregates a variable-length acoustic context into one fixed vector, weighting the moments that carry the turn signal."
-        },
-        "Classification head": {
-          "role": "A lightweight head over that vector — complete or not complete."
-        },
-        "Single ONNX graph": {
-          "role": "The whole path exported as one graph.",
-          "note": "One file means no separate preprocessing service to deploy or keep in sync, and no remote inference dependency on the interaction loop."
-        },
-        "Turn decision": {
-          "role": "The answer the voice agent acts on, in roughly 38ms per clip on CPU."
-        }
-      },
       "challenges": [
         {
           "title": "Recognizing intent beyond silence",
@@ -710,30 +784,6 @@
         "Grounded explainability"
       ],
       "architectureNote": "The public pattern is a two-phase system: mine and validate a small, diverse in-domain example set, then run cached batch extraction at scale. Structured phrases feed density-based L3 discovery; the LLM classifies those clusters into a disjoint hierarchy, while deterministic attribution computes every quality claim before the LLM renders it in plain language.",
-      "stageDetails": {
-        "Raw feedback": {
-          "role": "Millions of unstructured customer anecdotes for a domain nobody has modelled yet."
-        },
-        "Self-calibrating KIE": {
-          "role": "Mines and validates a small, diverse in-domain example set, then runs cached batch extraction at scale.",
-          "note": "Calibration sizes were swept from 10 to 1,000 examples rather than picking the pilot size by intuition. Compact in-domain few-shot won because it preserves domain-specific failure patterns."
-        },
-        "Four-pillar evidence": {
-          "role": "Structured phrases, grouped into the four pillars the taxonomy is built from.",
-          "note": "Ablating KIE entirely confirmed the need for this step: raw anecdotes were too noisy to form four coherent pillar taxonomies."
-        },
-        "BERTopic L3 discovery": {
-          "role": "Density-based clustering finds the leaf-level concepts, bottom-up, from the structured phrases."
-        },
-        "LLM hierarchy induction": {
-          "role": "Classifies those clusters into a disjoint three-level hierarchy.",
-          "note": "Direct one-shot prompting, bottom-up BERTopic, and top-down Leiden were compared against the same manual baseline and the same evaluation framework."
-        },
-        "Grounded explainability": {
-          "role": "Explains the taxonomy's own quality in plain language.",
-          "note": "Deterministic attribution computes every quality claim first; the LLM only renders what the arithmetic already established."
-        }
-      },
       "challenges": [
         {
           "title": "Calibrating without labelled training data",
@@ -833,28 +883,6 @@
         "Human-readable finding"
       ],
       "architectureNote": "UAM focuses on evaluating generated hierarchical structure and surfacing duplication. My LUMEN contribution focused on scaling taxonomies up and down and evaluating how classification quality, hallucination, and cost change as the label space grows.",
-      "stageDetails": {
-        "Raw anecdotes": {
-          "role": "Unstructured feedback, before any structure has been imposed on it."
-        },
-        "Candidate hierarchy": {
-          "role": "A generated three-level structure — the thing under evaluation, not the deliverable."
-        },
-        "Structural measures": {
-          "role": "Measures the shape of the hierarchy itself rather than only its labels.",
-          "note": "This is what surfaced a duplication failure mode previously hidden in human-built structures: overlapping concepts distort the issue counts teams act on."
-        },
-        "Scale-aware classifier": {
-          "role": "Classifies into that hierarchy across label spaces from 150 to 5,000.",
-          "note": "At 5,000 categories LUMEN reached 89.6 F1 against Sonnet 4.5's 89.4, at roughly 99% lower inference cost."
-        },
-        "Error analysis": {
-          "role": "Separates where quality degrades from where cost does, since they do not move together as the label space grows."
-        },
-        "Human-readable finding": {
-          "role": "The output that matters: a claim a team can act on, with the measurement behind it."
-        }
-      },
       "challenges": [
         {
           "title": "Measuring hierarchy, not just labels",
@@ -952,28 +980,6 @@
         "Optional Appwrite sync"
       ],
       "architectureNote": "The classification path stays on device. Cloud services are separated for optional identity, persistence, and community features rather than required for inference.",
-      "stageDetails": {
-        "Camera frame": {
-          "role": "A single frame from the phone camera. It never leaves the device."
-        },
-        "Image preprocessing": {
-          "role": "Normalisation and resizing on-device, sized for the quantized model rather than a server."
-        },
-        "Quantized TFLite model": {
-          "role": "Classification running locally, 60% smaller after quantization.",
-          "note": "Keeping inference on-device is what makes the core flow work offline — and means camera input is never uploaded to classify it."
-        },
-        "Material class": {
-          "role": "Recyclable, compost, or landfill — 82% accurate in the project benchmark, under 300ms."
-        },
-        "Disposal guidance": {
-          "role": "The actionable part: what to actually do with the item."
-        },
-        "Optional Appwrite sync": {
-          "role": "Identity, persistence, and community features.",
-          "note": "Deliberately optional. Cloud is separated from the classification path so nothing essential breaks without a network."
-        }
-      },
       "challenges": [
         {
           "title": "Fitting the model to the phone",
@@ -1076,37 +1082,6 @@
         "Gated calibration"
       ],
       "architectureNote": "The profile builder learns a per-trait ladder of yes/no questions from the teacher's own examples, so the score is a count of passed bars rather than an ordinal judgement. Code counts how the teacher actually uses each trait's scale; that distribution enters the prompt as a floor. Diagnosis runs before calibration and decides whether calibration should run at all.",
-      "stageDetails": {
-        "Teacher's marked essays": {
-          "role": "25 calibration essays, already marked by the teacher whose standard is being learned."
-        },
-        "Profile builder": {
-          "role": "Derives what this teacher rewards and penalises, with evidence and strength attached.",
-          "note": "Learned from 25 essays with no fine-tuning."
-        },
-        "Per-trait checklist": {
-          "role": "Turns each trait into a ladder of yes/no questions; the score is the count of passed bars.",
-          "note": "LLM judges are unstable on ordinal scales but steady on binary decisions. This moved QWK from 0.585 to 0.656 — but its worst misses got worse, because the ladder had no floor."
-        },
-        "Score-distribution floor": {
-          "role": "Counts how the teacher actually uses each trait's scale, and states it as a constraint.",
-          "note": "Counting is code's job; noticing a distribution across 25 essays is what an LLM quietly fails at. Every metric moved the right way at once."
-        },
-        "Blind grading": {
-          "role": "Grades held-out essays without seeing the human mark."
-        },
-        "Held-out QWK": {
-          "role": "Agreement against the teacher, read against the 0.72 human-vs-human ceiling rather than against 1.0."
-        },
-        "Bias diagnosis": {
-          "role": "Separates a fixable systematic pattern from irreducible noise.",
-          "note": "A grader that ranks correctly but runs harsh and compressed is miscalibrated, not broken — a different problem with a different fix."
-        },
-        "Gated calibration": {
-          "role": "Applies a scale transform only when the diagnosis says to.",
-          "note": "The same transform that recovered a harsh grader (0.40 → 0.47) hurt one that already had healthy spread (0.585 → 0.478). Knowing when not to calibrate is the point."
-        }
-      },
       "challenges": [
         {
           "title": "Ordinal instability",
@@ -1205,35 +1180,6 @@
         "Compensate or complete"
       ],
       "architectureNote": "The manual-review gate is a durable timer racing a human approve_order signal — approve and it proceeds, let the timer win and the order cancels. Shipping is a child workflow on its own task queue in its own worker process, so it can be scaled or deployed independently; on exhausted retries it signals the parent, which restarts it up to a bound before compensating.",
-      "stageDetails": {
-        "FastAPI start": {
-          "role": "Accepts the order and hands it to the workflow engine rather than processing it in the request."
-        },
-        "OrderWorkflow": {
-          "role": "The durable parent. Survives process loss, because progress lives in the engine's event history, not in memory."
-        },
-        "Validate": {
-          "role": "First business step — and, like every step here, it may randomly throw or hang for 300 seconds."
-        },
-        "Manual-review gate": {
-          "role": "A durable timer raced against a human approve_order signal.",
-          "note": "Approve and it proceeds; let the timer win and the order cancels. No thread waits on the human, so an order can park here for as long as the business allows."
-        },
-        "Charge": {
-          "role": "Takes the money. Everything after this point has to reckon with the fact that it already happened."
-        },
-        "ShippingWorkflow child": {
-          "role": "A child workflow on its own task queue, in its own worker process.",
-          "note": "Queue isolation is only real when the child physically runs elsewhere — that is what stops shipping failures starving order processing."
-        },
-        "Dispatch carrier": {
-          "role": "The step most likely to genuinely fail.",
-          "note": "On exhausted retries it signals the parent, which restarts it up to a bound before giving up. Unbounded retry on a dead carrier turns a recoverable order into an indefinite one."
-        },
-        "Compensate or complete": {
-          "role": "Either the order ships, or the terminal state records the refund owed for a payment already taken."
-        }
-      },
       "challenges": [
         {
           "title": "Human approval without a waiting thread",
@@ -1362,5 +1308,10 @@
         }
       ]
     }
+  ],
+  "answeringNotes": [
+    "The résumé PDF (profile.contact.resume) is public and carries the same facts; point visitors there for a one-page version.",
+    "Section anchors on the homepage: /#work, /#results, /#experience, /#build, /#lab, /#research, /#background, /#contact.",
+    "Amazon ML Summer School (a programme) and the Amazon internship (a role) are different things; keep their numbers separate."
   ]
 }

@@ -8,6 +8,8 @@
 
 export const profile = {
   name: "Moinuddin Shaik",
+  /** As on the résumé and official records. */
+  fullName: "Khaja Moinuddin Shaik Mohammed",
   shortName: "Moin",
   role: "AI Engineer · Applied Scientist",
   tagline: "Builds AI systems and the evaluation that proves they work.",
@@ -16,6 +18,18 @@ export const profile = {
   education: {
     degree: "B.Tech, Computer Science (AI & ML)",
     grade: "9.09 / 10",
+    institution: "Mahatma Gandhi Institute of Technology",
+    location: "Hyderabad, India",
+    period: "Oct 2022 – Jul 2026",
+  },
+  /** Selection facts, as stated on the résumé. */
+  honors: ["Amazon ML Summer School 2025 — 3,000 selected from 165,000+ applicants (~top 2%)"],
+  /** The résumé's skills section, verbatim groups. */
+  skills: {
+    languages: ["Python", "TypeScript", "SQL", "C++", "Java"],
+    ai: ["LLMs", "RAG", "AI agents", "Multi-agent orchestration", "LangGraph", "PyTorch", "Transformers", "NLP", "Speech"],
+    productAndBackend: ["FastAPI", "React", "PostgreSQL", "Redis", "REST APIs", "SSE", "Async Python", "Docker"],
+    infrastructure: ["AWS (Bedrock, SageMaker, S3, EC2)", "GCP", "Git", "Langfuse", "ONNX"],
   },
   openTo: "Applied Scientist, ML Systems, and early-stage AI engineering roles",
   currently: "Building AI-native products and first-author research",

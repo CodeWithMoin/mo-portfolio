@@ -6,10 +6,10 @@
  * and the client falls back to the in-browser retrieval, so the chat degrades to
  * "deterministic" rather than "broken".
  *
- * Two providers, chosen by which key is set: NVIDIA's free NIM endpoint
- * (OpenAI-compatible, NVIDIA_API_KEY) or Anthropic (ANTHROPIC_API_KEY). When both
- * are set, NVIDIA wins — it is the free one. Everything before the model call is
- * provider-agnostic; only the streaming differs.
+ * Three providers, chosen by which key is set — Gemini, then NVIDIA NIM, then
+ * Anthropic — or pinned with ASK_PROVIDER. Gemini and NIM share one code path (both
+ * speak the OpenAI chat-completions shape); Anthropic uses its SDK. Everything
+ * before the model call is provider-agnostic; only the streaming differs.
  *
  * Grounding: the model gets the whole corpus as a cached system prompt and is told
  * to answer only from it. The corpus is small enough to send whole, which beats
@@ -32,10 +32,16 @@ interface KV {
   put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
 }
 
+type Provider = "gemini" | "nvidia" | "anthropic";
+
 interface Env {
-  /** NVIDIA NIM key from build.nvidia.com. Takes precedence: it is the free path. */
+  /** Google AI Studio key. Free tier, implicit prefix caching — the default choice. */
+  GEMINI_API_KEY?: string;
+  /** NVIDIA NIM key from build.nvidia.com. */
   NVIDIA_API_KEY?: string;
   ANTHROPIC_API_KEY?: string;
+  /** Pin a provider when more than one key is set. */
+  ASK_PROVIDER?: Provider;
   /** Model id. Defaults per provider — see DEFAULT_MODEL. */
   ASK_MODEL?: string;
   /** KV namespace binding for quotas. Without it the limits are per-isolate, best effort. */
@@ -44,7 +50,7 @@ interface Env {
   ASK_DAILY_LIMIT?: string;
   /** Questions per UTC day across all visitors — the ceiling on the bill. Defaults to 300. */
   ASK_GLOBAL_DAILY_LIMIT?: string;
-  /** Questions per minute across all visitors. Keeps a burst under the provider's own per-minute limit. Defaults to 20. */
+  /** Questions per minute across all visitors. Keeps a burst under the provider's own per-minute limit (Gemini free tier: 10). Defaults to 8. */
   ASK_MINUTE_LIMIT?: string;
 }
 
@@ -58,9 +64,19 @@ const MAX_BODY_BYTES = 24_000;
 // request can cost no matter what the visitor talks the model into.
 const MAX_OUTPUT_TOKENS = 700;
 const DEFAULT_DAILY_LIMIT = 10;
-const NVIDIA_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
+const OPENAI_COMPAT_URL = {
+  gemini: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+  nvidia: "https://integrate.api.nvidia.com/v1/chat/completions",
+} as const;
+// A shared free tier can stall for a minute. The chat shows the visitor an index
+// answer the moment the stream closes empty, so a stall must fail fast and empty.
+const FIRST_TOKEN_TIMEOUT_MS = 12_000;
+const STALL_TIMEOUT_MS = 8_000;
 // NIM retires model ids (a 410 names the date); if the default dies, set ASK_MODEL.
-const DEFAULT_MODEL = { nvidia: "nvidia/nemotron-3.5-lightning-30b-a3b", anthropic: "claude-opus-5" } as const;
+const DEFAULT_MODEL: Record<Provider, string> = { gemini: "gemini-3.8-flash", nvidia: "nvidia/nemotron-3.5-lightning-30b-a3b", anthropic: "claude-opus-5" };
+// Tried in order when the chosen model is at capacity (503) or rate-limited (429).
+// `-latest` is an alias Google keeps pointed at a serving model, so it outlives ids.
+const FALLBACK_MODEL: Record<"gemini" | "nvidia", string[]> = { gemini: ["gemini-3.7-flash", "gemini-flash-latest"], nvidia: [] };
 const ERRORS = {
   busy: "The assistant is getting a lot of questions right now — try again in a minute.",
   misconfigured: "The assistant is misconfigured. The rest of the site still works — or email hello@moinuddin.app.",
@@ -69,7 +85,7 @@ const ERRORS = {
   refused: "I can't help with that one. Ask me about Moin's projects, research, or experience.",
 };
 const DEFAULT_GLOBAL_DAILY_LIMIT = 300;
-const DEFAULT_MINUTE_LIMIT = 20;
+const DEFAULT_MINUTE_LIMIT = 8;
 
 const DECLINE = "I can only talk about Moin's work — his projects, research, experience, and stack. Ask me about any of those.";
 
@@ -167,7 +183,9 @@ function parseTurns(payload: unknown): Turn[] | null {
 }
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }): Promise<Response> => {
-  const provider = env.NVIDIA_API_KEY ? "nvidia" : env.ANTHROPIC_API_KEY ? "anthropic" : null;
+  const keys: Record<Provider, string | undefined> = { gemini: env.GEMINI_API_KEY, nvidia: env.NVIDIA_API_KEY, anthropic: env.ANTHROPIC_API_KEY };
+  const provider: Provider | null =
+    env.ASK_PROVIDER && keys[env.ASK_PROVIDER] ? env.ASK_PROVIDER : (["gemini", "nvidia", "anthropic"] as const).find((name) => keys[name]) ?? null;
   if (!provider) return json(503, { error: "not_configured" });
 
   // Same-origin only. Not a security boundary on its own (headers can be forged
@@ -223,14 +241,21 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   const write = (text: string) => writer.write(encoder.encode(text));
 
   /**
-   * NVIDIA NIM speaks the OpenAI chat-completions shape and streams server-sent
-   * events. Parsed by hand: it is one line format, and the SDK would be the only
-   * dependency this function has that the other provider does not need.
+   * Gemini and NVIDIA NIM both speak the OpenAI chat-completions shape and stream
+   * server-sent events. Parsed by hand: it is one line format, and an SDK would be
+   * the only dependency this function has that the other providers do not need.
    */
-  const pumpNvidia = async () => {
-    const response = await fetch(NVIDIA_URL, {
+  const pumpOpenAICompatible = async (name: "gemini" | "nvidia", model: string, fallbacks: string[]): Promise<void> => {
+    const abort = new AbortController();
+    let watchdog = setTimeout(() => abort.abort("first-token"), FIRST_TOKEN_TIMEOUT_MS);
+    const armStall = () => {
+      clearTimeout(watchdog);
+      watchdog = setTimeout(() => abort.abort("stall"), STALL_TIMEOUT_MS);
+    };
+    const response = await fetch(OPENAI_COMPAT_URL[name], {
       method: "POST",
-      headers: { authorization: `Bearer ${env.NVIDIA_API_KEY}`, "content-type": "application/json", accept: "text/event-stream" },
+      signal: abort.signal,
+      headers: { authorization: `Bearer ${keys[name]}`, "content-type": "application/json", accept: "text/event-stream" },
       body: JSON.stringify({
         model,
         messages: [{ role: "system", content: SYSTEM }, ...turns],
@@ -239,16 +264,24 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         temperature: 0.2,
         top_p: 0.9,
         stream: true,
-        // Nemotron can "think" before answering. Off here: the thinking would burn
-        // the output cap before the answer, and a portfolio question needs none.
+        // Both families can "think" before answering. Kept minimal: the thinking
+        // would burn the output cap before the answer, and a portfolio question
+        // needs none. Each takes its own knob; an unknown one is a 400.
+        ...(name === "gemini" ? { reasoning_effort: "low" } : {}),
         ...(model.startsWith("nvidia/nemotron") ? { chat_template_kwargs: { enable_thinking: false } } : {}),
       }),
     });
 
     if (!response.ok || !response.body) {
-      // The visitor gets a sentence; the owner gets the reason in the Pages log.
-      console.error(`ask: NIM ${response.status} for ${model}: ${(await response.text().catch(() => "")).slice(0, 300)}`);
-      await write(response.status === 429 ? ERRORS.busy : response.status === 401 || response.status === 403 ? ERRORS.misconfigured : ERRORS.upstream);
+      clearTimeout(watchdog);
+      // The owner gets the reason in the Pages log; the visitor gets the next model,
+      // or — for a capacity problem with nothing left to try — an empty stream, which
+      // the chat answers from its own index. That beats an apology.
+      console.error(`ask: ${name} ${response.status} for ${model}: ${(await response.text().catch(() => "")).slice(0, 300)}`);
+      const capacity = response.status === 503 || response.status === 429;
+      if (capacity && fallbacks.length) return pumpOpenAICompatible(name, fallbacks[0], fallbacks.slice(1));
+      if (capacity) return;
+      await write(response.status === 401 || response.status === 403 ? ERRORS.misconfigured : ERRORS.upstream);
       return;
     }
 
@@ -256,6 +289,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const decoder = new TextDecoder();
     let buffer = "";
     let wroteAnything = false;
+    try {
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -277,9 +311,20 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         if (choice?.delta?.content) {
           await write(choice.delta.content);
           wroteAnything = true;
+          armStall();
         }
         if (choice?.finish_reason === "content_filter") await write(ERRORS.refused);
       }
+    }
+    } catch (error) {
+      // Timed out before any text: close empty and let the chat answer from the
+      // index. Timed out mid-answer: what arrived stands, with the cut marked.
+      if (!abort.signal.aborted) throw error;
+      console.error(`ask: ${name} ${String(abort.signal.reason)} timeout for ${model}`);
+      if (wroteAnything) await write(" […]");
+      return;
+    } finally {
+      clearTimeout(watchdog);
     }
     if (!wroteAnything) await write(ERRORS.upstream);
   };
@@ -326,7 +371,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
   const pump = async () => {
     try {
-      await (provider === "nvidia" ? pumpNvidia() : pumpAnthropic());
+      await (provider === "anthropic"
+        ? pumpAnthropic()
+        : pumpOpenAICompatible(provider, model, FALLBACK_MODEL[provider].filter((candidate) => candidate !== model)));
     } catch (error) {
       const known = Object.values(ERRORS);
       const message = error instanceof Error && known.includes(error.message) ? error.message : ERRORS.unknown;
