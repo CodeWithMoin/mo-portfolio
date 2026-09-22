@@ -13,6 +13,8 @@ type Exchange = {
   question: string;
   /** Streamed model text, when the endpoint answered. */
   text: string;
+  /** Which model produced it, for the badge. */
+  provider?: string;
   /** Deterministic answer, when it did not. */
   local: Answer | null;
   /** The model's daily quota was spent, so this one was answered locally. */
@@ -37,6 +39,8 @@ function useAsk() {
   if (!context) throw new Error("useAsk must be used inside an AskProvider");
   return context;
 }
+
+const PROVIDER_LABEL: Record<string, string> = { gemini: "Gemini", nvidia: "Nemotron", anthropic: "Claude" };
 
 /** Case studies the model named, so its prose can be followed by real links. */
 function mentionedProjects(text: string) {
@@ -92,7 +96,7 @@ export function AskProvider({ children }: { children: React.ReactNode }) {
     const controller = new AbortController();
     abort.current = controller;
     const startedAt = Date.now();
-    void askRemote([...history, { role: "user", content: asked }], (text) => patch({ text, status: "streaming" }), controller.signal).then(
+    void askRemote([...history, { role: "user", content: asked }], (text, meta) => patch({ text, provider: meta.provider, status: "streaming" }), controller.signal).then(
       async (result) => {
         // The local path is instant, which reads as a canned reply popping in. Hold
         // the "reading" state for a beat so both paths feel like the same assistant.
@@ -329,7 +333,7 @@ function SideChat() {
                   <div className="mt-4">
                     <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
                       <span className={cn("size-1.5 rounded-full bg-accent", exchange.status !== "done" && "animate-pulse")} />
-                      {exchange.status === "thinking" ? "Reading the portfolio" : "Claude · grounded in this site"}
+                      {exchange.status === "thinking" ? "Reading the portfolio" : `${PROVIDER_LABEL[exchange.provider ?? ""] ?? "Model"} · grounded in this site`}
                     </span>
                     {exchange.text && (
                       <p className="mt-3 whitespace-pre-wrap text-pretty text-[15px] leading-7">

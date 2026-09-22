@@ -22,6 +22,10 @@
  *   4. a cheap injection screen that declines without calling the model
  *   5. a system prompt that scopes the model to the portfolio and nothing else
  *   6. a small output cap, and refusals turned into a plain sentence
+ *
+ * Failure policy: if the model has produced no text, the stream closes empty and
+ * the chat answers from the in-browser index. Visitors never see an apology; the
+ * owner sees the reason in the Pages log.
  */
 import Anthropic from "@anthropic-ai/sdk";
 import corpus from "../corpus.json";
@@ -77,11 +81,9 @@ const DEFAULT_MODEL: Record<Provider, string> = { gemini: "gemini-3.8-flash", nv
 // Tried in order when the chosen model is at capacity (503) or rate-limited (429).
 // `-latest` is an alias Google keeps pointed at a serving model, so it outlives ids.
 const FALLBACK_MODEL: Record<"gemini" | "nvidia", string[]> = { gemini: ["gemini-3.7-flash", "gemini-flash-latest"], nvidia: [] };
+// The only sentence a failure ever shows. Everything else closes the stream empty
+// and the chat answers from its own index instead.
 const ERRORS = {
-  busy: "The assistant is getting a lot of questions right now — try again in a minute.",
-  misconfigured: "The assistant is misconfigured. The rest of the site still works — or email hello@moinuddin.app.",
-  upstream: "The assistant hit an upstream error. Try again, or email hello@moinuddin.app.",
-  unknown: "Something went wrong answering that. Try again, or email hello@moinuddin.app.",
   refused: "I can't help with that one. Ask me about Moin's projects, research, or experience.",
 };
 const DEFAULT_GLOBAL_DAILY_LIMIT = 300;
@@ -252,7 +254,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       clearTimeout(watchdog);
       watchdog = setTimeout(() => abort.abort("stall"), STALL_TIMEOUT_MS);
     };
-    const response = await fetch(OPENAI_COMPAT_URL[name], {
+    let response: Response;
+    try {
+      response = await fetch(OPENAI_COMPAT_URL[name], {
       method: "POST",
       signal: abort.signal,
       headers: { authorization: `Bearer ${keys[name]}`, "content-type": "application/json", accept: "text/event-stream" },
@@ -271,6 +275,13 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         ...(model.startsWith("nvidia/nemotron") ? { chat_template_kwargs: { enable_thinking: false } } : {}),
       }),
     });
+    } catch (error) {
+      // Aborted or unreachable before a single byte: nothing to show, so show
+      // nothing — the chat answers from its index. The log keeps the reason.
+      clearTimeout(watchdog);
+      console.error(`ask: ${name} request failed for ${model}: ${abort.signal.aborted ? String(abort.signal.reason) : String(error)}`);
+      return;
+    }
 
     if (!response.ok || !response.body) {
       clearTimeout(watchdog);
@@ -280,8 +291,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       console.error(`ask: ${name} ${response.status} for ${model}: ${(await response.text().catch(() => "")).slice(0, 300)}`);
       const capacity = response.status === 503 || response.status === 429;
       if (capacity && fallbacks.length) return pumpOpenAICompatible(name, fallbacks[0], fallbacks.slice(1));
-      if (capacity) return;
-      await write(response.status === 401 || response.status === 403 ? ERRORS.misconfigured : ERRORS.upstream);
+      // Every other failure also closes empty: a bad key is the owner's to fix from
+      // the log, and the visitor still gets an answer, just not the model's.
       return;
     }
 
@@ -326,7 +337,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     } finally {
       clearTimeout(watchdog);
     }
-    if (!wroteAnything) await write(ERRORS.upstream);
+    if (!wroteAnything) console.error(`ask: ${name} returned no text for ${model}`);
   };
 
   const pumpAnthropic = async () => {
@@ -358,14 +369,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       const final = await stream.finalMessage();
       if (final.stop_reason === "refusal") await write(ERRORS.refused);
     } catch (error) {
-      // Most specific first: a rate limit is retryable, a bad key is ours to fix.
-      throw error instanceof Anthropic.RateLimitError
-        ? new Error(ERRORS.busy)
-        : error instanceof Anthropic.AuthenticationError
-          ? new Error(ERRORS.misconfigured)
-          : error instanceof Anthropic.APIError
-            ? new Error(ERRORS.upstream)
-            : new Error(ERRORS.unknown);
+      console.error(`ask: anthropic failed for ${model}: ${error instanceof Anthropic.APIError ? `${error.status} ${error.name}` : String(error)}`);
     }
   };
 
@@ -375,9 +379,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
         ? pumpAnthropic()
         : pumpOpenAICompatible(provider, model, FALLBACK_MODEL[provider].filter((candidate) => candidate !== model)));
     } catch (error) {
-      const known = Object.values(ERRORS);
-      const message = error instanceof Error && known.includes(error.message) ? error.message : ERRORS.unknown;
-      await write(message).catch(() => {});
+      // Nothing is written on failure. An empty stream is the signal the client
+      // understands: answer from the index, no apology.
+      console.error(`ask: ${provider} unexpected: ${String(error)}`);
     } finally {
       await writer.close().catch(() => {});
     }

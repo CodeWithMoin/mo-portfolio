@@ -24,7 +24,10 @@ export const remoteAvailability = () => availability;
  * Resolves "answered" once a response has streamed, even a partial one; otherwise
  * nothing was shown and the caller should fall back.
  */
-export async function askRemote(messages: ChatTurn[], onText: (text: string) => void, signal?: AbortSignal): Promise<RemoteResult> {
+/** Which model answered, from the endpoint's header, for the badge on the answer. */
+export type RemoteMeta = { provider: string };
+
+export async function askRemote(messages: ChatTurn[], onText: (text: string, meta: RemoteMeta) => void, signal?: AbortSignal): Promise<RemoteResult> {
   // Both are remembered for the session: no point paying a round trip to be told again.
   if (availability === "unavailable" || availability === "limited") return availability;
 
@@ -55,6 +58,7 @@ export async function askRemote(messages: ChatTurn[], onText: (text: string) => 
   }
 
   availability = "available";
+  const meta: RemoteMeta = { provider: response.headers.get("x-ask-provider") ?? "model" };
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let text = "";
@@ -63,7 +67,7 @@ export async function askRemote(messages: ChatTurn[], onText: (text: string) => 
       const { done, value } = await reader.read();
       if (done) break;
       text += decoder.decode(value, { stream: true });
-      onText(text);
+      onText(text, meta);
     }
   } catch {
     // Dropped mid-stream: keep what arrived rather than discarding a partial answer.
