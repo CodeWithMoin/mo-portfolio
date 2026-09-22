@@ -20,6 +20,9 @@ type Exchange = {
   /** The model's daily quota was spent, so this one was answered locally. */
   limited?: boolean;
   status: "thinking" | "streaming" | "done";
+  /** When it was asked, and how long until the first word — the "Thought for" time. */
+  startedAt: number;
+  thoughtMs?: number;
 };
 
 type AskContextValue = {
@@ -69,13 +72,94 @@ function useTypedText(target: string) {
   return { text: words.slice(0, shown).join(""), typing: shown < words.length };
 }
 
+/**
+ * The model is asked for sentences plus "- " lines; this renders exactly that, in
+ * the same style as the site's own answers. Anything stray (bold markers, headings)
+ * is stripped rather than shown as raw symbols.
+ */
+function FormattedAnswer({ text, caret }: { text: string; caret: boolean }) {
+  const clean = (line: string) => line.replace(/\*\*|__/g, "").replace(/^#{1,6}\s+/, "").replace(/^\s*\d+[.)]\s+/, "- ");
+  const lines = text.split("\n").map(clean);
+  const blocks: ({ kind: "p"; text: string } | { kind: "ul"; items: string[] })[] = [];
+  for (const raw of lines) {
+    const line = raw.trimEnd();
+    const bullet = line.match(/^\s*[-*•]\s+(.*)$/);
+    if (bullet) {
+      const last = blocks[blocks.length - 1];
+      if (last?.kind === "ul") last.items.push(bullet[1]);
+      else blocks.push({ kind: "ul", items: [bullet[1]] });
+    } else if (line.trim()) {
+      blocks.push({ kind: "p", text: line.trim() });
+    }
+  }
+  const mark = <span aria-hidden="true" className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse bg-foreground" />;
+  const labelled = (item: string) => {
+    const match = item.match(/^([^:]{2,28}):\s+(.+)$/);
+    return match ? (
+      <>
+        <span className="font-medium text-foreground">{match[1]}</span> {match[2]}
+      </>
+    ) : (
+      item
+    );
+  };
+
+  return (
+    <div className="mt-3 space-y-3">
+      {blocks.map((block, index) => {
+        const isLast = index === blocks.length - 1;
+        return block.kind === "p" ? (
+          <p className="text-pretty text-[15px] leading-7" key={index}>
+            {block.text}
+            {caret && isLast && mark}
+          </p>
+        ) : (
+          <ul className="space-y-2" key={index}>
+            {block.items.map((item, itemIndex) => (
+              <li className="flex gap-3 text-[14.5px] leading-6 text-muted" key={itemIndex}>
+                <span aria-hidden="true" className="mt-2.5 size-1 shrink-0 rounded-full bg-accent" />
+                <span>
+                  {labelled(item)}
+                  {caret && isLast && itemIndex === block.items.length - 1 && mark}
+                </span>
+              </li>
+            ))}
+          </ul>
+        );
+      })}
+      {caret && blocks.length === 0 && mark}
+    </div>
+  );
+}
+
 function TypedAnswer({ text, streaming }: { text: string; streaming: boolean }) {
   const typed = useTypedText(text);
+  return <FormattedAnswer caret={streaming || typed.typing} text={typed.text} />;
+}
+
+/**
+ * "Thinking…" with a breathing dot, a sheen across the word and a running clock,
+ * settling into "Thought for 2.4s" once the first word arrives. Adapted from the
+ * ThoughtLine in DocuLens Personal, without its step trace. The clock is real
+ * elapsed time; nothing about progress is inferred from it.
+ */
+function ThinkingLine({ working, startedAt, ms }: { working: boolean; startedAt: number; ms?: number }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!working) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 100);
+    return () => window.clearInterval(timer);
+  }, [working]);
+  const seconds = ((working ? now - startedAt : (ms ?? now - startedAt)) / 1000).toFixed(1);
+
   return (
-    <p className="mt-3 whitespace-pre-wrap text-pretty text-[15px] leading-7">
-      {typed.text}
-      {(streaming || typed.typing) && <span aria-hidden="true" className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse bg-foreground" />}
-    </p>
+    <div className="mt-4 flex items-center gap-2 text-[13px] text-muted" data-working={working || undefined}>
+      <span aria-hidden="true" className={cn("size-1.5 rounded-full bg-accent", working && "thinking-dot")} />
+      <span className={cn(working && "thinking-sheen")}>{working ? "Thinking…" : "Thought for"}</span>
+      <span aria-hidden="true" className="font-mono text-[11.5px] tabular-nums">{seconds}s</span>
+      {/* Spoken once when it starts and once when it settles — never the ticking clock. */}
+      <span className="sr-only" role="status">{working ? "Thinking" : `Thought for ${seconds} seconds`}</span>
+    </div>
   );
 }
 
@@ -128,14 +212,21 @@ export function AskProvider({ children }: { children: React.ReactNode }) {
         { role: "assistant" as const, content: exchange.text },
       ]);
 
-    setExchanges((current) => [...current, { id, question: asked, text: "", local: null, status: "thinking" }]);
+    setExchanges((current) => [...current, { id, question: asked, text: "", local: null, status: "thinking", startedAt: Date.now() }]);
     const patch = (update: Partial<Exchange>) =>
       setExchanges((current) => current.map((exchange) => (exchange.id === id ? { ...exchange, ...update } : exchange)));
 
     const controller = new AbortController();
     abort.current = controller;
     const startedAt = Date.now();
-    void askRemote([...history, { role: "user", content: asked }], (text, meta) => patch({ text, provider: meta.provider, status: "streaming" }), controller.signal).then(
+    void askRemote([...history, { role: "user", content: asked }], (text, meta) =>
+        setExchanges((current) =>
+          current.map((exchange) =>
+            exchange.id === id
+              ? { ...exchange, text, provider: meta.provider, status: "streaming", thoughtMs: exchange.thoughtMs ?? Date.now() - exchange.startedAt }
+              : exchange,
+          ),
+        ), controller.signal).then(
       async (result) => {
         // The local path is instant, which reads as a canned reply popping in. Hold
         // the "reading" state for a beat so both paths feel like the same assistant.
@@ -143,7 +234,7 @@ export function AskProvider({ children }: { children: React.ReactNode }) {
         // Cleared mid-answer: the exchange is gone and a new one may already be running.
         if (controller.signal.aborted) return;
         if (result === "answered") patch({ status: "done" });
-        else patch({ local: ask(asked), limited: result === "limited", status: "done" });
+        else patch({ local: ask(asked), limited: result === "limited", status: "done", thoughtMs: Date.now() - startedAt });
         busyRef.current = false;
         setBusy(false);
       },
@@ -358,6 +449,8 @@ function SideChat() {
                   {exchange.question}
                 </p>
 
+                <ThinkingLine ms={exchange.thoughtMs} startedAt={exchange.startedAt} working={exchange.status === "thinking"} />
+
                 {exchange.local ? (
                   <>
                     {exchange.limited && (
@@ -369,11 +462,13 @@ function SideChat() {
                     <AnswerPanel answer={exchange.local} className="mt-4" stream />
                   </>
                 ) : (
-                  <div className="mt-4">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-                      <span className={cn("size-1.5 rounded-full bg-accent", exchange.status !== "done" && "animate-pulse")} />
-                      {exchange.status === "thinking" ? "Reading the portfolio" : `${PROVIDER_LABEL[exchange.provider ?? ""] ?? "Model"} · grounded in this site`}
-                    </span>
+                  <div className="mt-3">
+                    {exchange.text && (
+                      <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                        <span className="size-1.5 rounded-full bg-accent" />
+                        {`${PROVIDER_LABEL[exchange.provider ?? ""] ?? "Model"} · grounded in this site`}
+                      </span>
+                    )}
                     {exchange.text && <TypedAnswer streaming={exchange.status === "streaming"} text={exchange.text} />}
                     {exchange.status === "done" && cited.length > 0 && (
                       <div className="mt-4 flex flex-wrap gap-2">

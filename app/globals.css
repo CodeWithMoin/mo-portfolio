@@ -455,6 +455,40 @@ button:hover .nudge,
   }
 }
 
+/* The chat's "Thinking…" line: the dot breathes and a band of darker ink sweeps
+   the word. Reduced motion stops both; the clock beside it still counts. */
+.thinking-dot {
+  animation: thinking-breathe 1.6s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+}
+@keyframes thinking-breathe {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+.thinking-sheen {
+  background: linear-gradient(100deg, var(--muted) 30%, var(--foreground) 50%, var(--muted) 70%);
+  background-size: 250% 100%;
+  background-position: 125% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: thinking-sheen 1.6s linear infinite;
+}
+@keyframes thinking-sheen {
+  to { background-position: -125% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thinking-dot,
+  .thinking-sheen {
+    animation: none;
+  }
+  .thinking-sheen {
+    color: var(--muted);
+    -webkit-text-fill-color: var(--muted);
+    background: none;
+  }
+}
+
 /* Scrollbar: present, quiet, on-palette. */
 html {
   scrollbar-width: thin;
