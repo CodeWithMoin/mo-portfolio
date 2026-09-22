@@ -97,7 +97,10 @@ export function AudienceSwitch({ className }: { className?: string }) {
               active ? "text-foreground" : "text-background/60 hover:text-background",
             )}
             key={option}
-            onClick={() => setAudience(option)}
+            onClick={(event) => {
+              const rect = event.currentTarget.getBoundingClientRect();
+              setAudience(option, { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+            }}
             role="radio"
             title={audienceLabels[option].hint}
             type="button"

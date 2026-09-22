@@ -49,6 +49,9 @@ export function Section({
       return;
     }
     if (reduceMotion || position === -1) return;
+    // Under the circle reveal (audience-provider) the reveal is the motion; a rise
+    // inside the page being revealed would fight it. The rise belongs to the curtain.
+    if (document.documentElement.dataset.reveal) return;
 
     // Opacity is the curtain's job (see globals.css); this only adds the staggered
     // rise, timed to land as the curtain lifts.

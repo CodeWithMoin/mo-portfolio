@@ -180,6 +180,22 @@ html[data-switching] .section-flow {
   transition-duration: 0.18s;
 }
 
+/* Mode-switch reveal (View Transitions API). Only while the provider sets
+   data-reveal, so Next's own navigation transitions are untouched. The default
+   cross-fade is switched off: the new page is clipped open over the old snapshot by
+   the animation the provider starts once the transition is ready. */
+html[data-reveal]::view-transition-old(root),
+html[data-reveal]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html[data-reveal]::view-transition-group(root) {
+  animation-duration: 0.64s;
+}
+html[data-reveal]::view-transition-new(root) {
+  clip-path: var(--reveal-from);
+}
+
 /* Hero variants share one grid cell; the mode on <html> decides which is showing.
    The hidden one leaves the accessibility tree and tab order via visibility, and
    its visibility flips only after it has faded, so the outgoing claim fades out

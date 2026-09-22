@@ -7,7 +7,8 @@ import { DEFAULT_AUDIENCE, QUERY_KEY, STORAGE_KEY, normalizeAudience, type Audie
 
 type AudienceContextValue = {
   audience: Audience;
-  setAudience: (next: Audience) => void;
+  /** `origin` is where the reveal grows from — the control that was pressed. */
+  setAudience: (next: Audience, origin?: { x: number; y: number }) => void;
   /** False until the client has reconciled URL/localStorage, so UI can avoid a flash of the wrong label. */
   ready: boolean;
 };
@@ -66,7 +67,7 @@ export function AudienceProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
-  const setAudience = useCallback((next: Audience) => {
+  const setAudience = useCallback((next: Audience, origin?: { x: number; y: number }) => {
     const root = document.documentElement;
     if (root.dataset.audience === next && !root.dataset.switching) return;
 
@@ -123,6 +124,48 @@ export function AudienceProvider({ children }: { children: React.ReactNode }) {
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       apply();
+      return;
+    }
+
+    /**
+     * Where the browser has the View Transitions API, the new layout is revealed
+     * through a circle that grows from the switch: the old page is snapshotted, the
+     * swap and scroll anchor happen inside the callback, and the new page is clipped
+     * open over the snapshot. It reads as flipping a switch rather than a fade. The
+     * curtain below stays as the fallback.
+     */
+    if (typeof document.startViewTransition === "function") {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const x = origin?.x ?? w / 2;
+      const y = origin?.y ?? h - 40;
+      // Percentages, not px: the snapshot reference box is the viewport, and px
+      // values land in the wrong place on fractional display scales.
+      const at = `${(x / w) * 100}% ${(y / h) * 100}%`;
+      // The far corner, expressed the way circle() resolves a percentage radius.
+      const reach = Math.hypot(Math.max(x, w - x), Math.max(y, h - y));
+      const radius = (reach / (Math.hypot(w, h) / Math.SQRT2)) * 100;
+      const from = `circle(0% at ${at})`;
+
+      root.dataset.reveal = "true";
+      // Pinned in CSS from the first frame, so Firefox never paints the new page
+      // unclipped between the snapshot and the animation starting.
+      root.style.setProperty("--reveal-from", from);
+      const done = () => {
+        delete root.dataset.reveal;
+        root.style.removeProperty("--reveal-from");
+      };
+
+      const transition = document.startViewTransition(apply);
+      transition.ready
+        .then(() => {
+          root.animate(
+            { clipPath: [from, `circle(${radius}% at ${at})`] },
+            { duration: 640, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "forwards", pseudoElement: "::view-transition-new(root)" },
+          );
+        })
+        .catch(() => {});
+      transition.finished.finally(done).catch(() => {});
       return;
     }
 

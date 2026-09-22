@@ -52,9 +52,11 @@ Open [http://localhost:3000](http://localhost:3000).
 
 The side chat (the **Ask** button, bottom right) works with no backend: it answers from the in-browser retrieval index. Deploying the Cloudflare Pages Function in `functions/api/ask.ts` upgrades it to a streamed, multi-turn chat with Claude, grounded in the full portfolio record (`functions/corpus.json`, regenerated from the typed data before every build).
 
-1. In Cloudflare Pages → Settings → Environment variables, add the **secret** `ANTHROPIC_API_KEY`. It is only ever read server-side.
-2. Optional: `ASK_MODEL` (default `claude-opus-5`).
-3. **Quota.** Create a KV namespace (Workers & Pages → KV) and bind it to the Pages project as `ASK_LIMITS` (Settings → Functions → KV namespace bindings). With it bound, each visitor gets **10 questions per UTC day** and the whole site **300**; change either with `ASK_DAILY_LIMIT` / `ASK_GLOBAL_DAILY_LIMIT`. IPs are never stored — the key is a SHA-256 of the IP salted with the date. Without the binding the counters live in one isolate's memory and only slow a burst, so bind it before sharing the link. When a visitor's quota is spent the endpoint answers 429 and the chat says so and keeps answering from the in-browser index.
+1. In Cloudflare Pages → Settings → Environment variables, add **one** secret, encrypted, only ever read server-side:
+   - `NVIDIA_API_KEY` — a free key from [build.nvidia.com](https://build.nvidia.com) (OpenAI-compatible NIM endpoint). Takes precedence when both are set.
+   - or `ANTHROPIC_API_KEY`.
+2. Optional: `ASK_MODEL` — the model id. Defaults: `nvidia/nemotron-3.5-lightning-30b-a3b` on NVIDIA, `claude-opus-5` on Anthropic. Use the exact id from the model's page on build.nvidia.com; NIM retires ids (a 410 in the Pages log names the date), so change this rather than the code when that happens. To try a provider locally without deploying, put the key in `.env.local` and run `npx tsx scripts/ask-live.mts "a question"`.
+3. **Quota.** Create a KV namespace (Workers & Pages → KV) and bind it to the Pages project as `ASK_LIMITS` (Settings → Functions → KV namespace bindings). With it bound, each visitor gets **10 questions per UTC day** and the whole site **300**; change either with `ASK_DAILY_LIMIT` / `ASK_GLOBAL_DAILY_LIMIT`; `ASK_MINUTE_LIMIT` (default 20) caps bursts across all visitors so a spike never trips the provider's own per-minute limit. IPs are never stored — the key is a SHA-256 of the IP salted with the date. Without the binding the counters live in one isolate's memory and only slow a burst, so bind it before sharing the link. When a visitor's quota is spent the endpoint answers 429 and the chat says so and keeps answering from the in-browser index.
 
 Guardrails in `functions/api/ask.ts`, in the order a request meets them: same-origin + JSON-only + 24 KB body cap; strict shape validation (600-char questions, 8 turns); the quotas above; a narrow injection screen that declines without calling the model (and screens forged assistant history too); a system prompt that scopes the model to the portfolio, forbids revealing itself or dumping the corpus, and refuses to speak for Moin on salary, availability, or visa questions; a 700-token output cap; model refusals turned into one plain sentence.
 
@@ -128,7 +130,7 @@ public/                 Résumé, fonts, and project imagery
 | `↑` `↓` `⏎` | Move and select |
 | `esc` | Close, or step back from an answer |
 
-Typing `whoami`, `ls`, or `help` into the ask bar does something. So does the Konami code.
+Typing `whoami`, `ls`, or `help` into the chat does something. So does the Konami code.
 
 ## Contact
 

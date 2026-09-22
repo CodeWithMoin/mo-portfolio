@@ -155,8 +155,8 @@ export default function Home() {
             <Reveal>
               <SectionHeading
                 eyebrow="Lab"
-                title="The retrieval engine behind the ask bar, with the arithmetic showing."
-                description="Not a simulation. It tokenizes in your browser, weights each term against an inverse-document-frequency table built from this site's own text, and ranks by cosine similarity. Type and watch every number change."
+                title="How Ask finds an answer without a model."
+                description="Not a simulation. Your question is tokenised in the browser, each term weighted by how rare it is across this site's own text, and every document ranked by cosine similarity. Nothing hidden: type, and watch each number change."
               />
             </Reveal>
             <Reveal delay={0.05}>

@@ -2,9 +2,14 @@
  * POST /api/ask — the portfolio's chat endpoint (Cloudflare Pages Function).
  *
  * The site itself is a static export; this is the only server code. It exists so
- * the API key never reaches the browser. Without ANTHROPIC_API_KEY configured it
- * answers 503 and the client falls back to the in-browser retrieval, so the chat
- * degrades to "deterministic" rather than "broken".
+ * the API key never reaches the browser. Without a key configured it answers 503
+ * and the client falls back to the in-browser retrieval, so the chat degrades to
+ * "deterministic" rather than "broken".
+ *
+ * Two providers, chosen by which key is set: NVIDIA's free NIM endpoint
+ * (OpenAI-compatible, NVIDIA_API_KEY) or Anthropic (ANTHROPIC_API_KEY). When both
+ * are set, NVIDIA wins — it is the free one. Everything before the model call is
+ * provider-agnostic; only the streaming differs.
  *
  * Grounding: the model gets the whole corpus as a cached system prompt and is told
  * to answer only from it. The corpus is small enough to send whole, which beats
@@ -28,8 +33,10 @@ interface KV {
 }
 
 interface Env {
+  /** NVIDIA NIM key from build.nvidia.com. Takes precedence: it is the free path. */
+  NVIDIA_API_KEY?: string;
   ANTHROPIC_API_KEY?: string;
-  /** Optional override. Defaults to claude-opus-5. */
+  /** Model id. Defaults per provider — see DEFAULT_MODEL. */
   ASK_MODEL?: string;
   /** KV namespace binding for quotas. Without it the limits are per-isolate, best effort. */
   ASK_LIMITS?: KV;
@@ -37,6 +44,8 @@ interface Env {
   ASK_DAILY_LIMIT?: string;
   /** Questions per UTC day across all visitors — the ceiling on the bill. Defaults to 300. */
   ASK_GLOBAL_DAILY_LIMIT?: string;
+  /** Questions per minute across all visitors. Keeps a burst under the provider's own per-minute limit. Defaults to 20. */
+  ASK_MINUTE_LIMIT?: string;
 }
 
 type Turn = { role: "user" | "assistant"; content: string };
@@ -49,7 +58,18 @@ const MAX_BODY_BYTES = 24_000;
 // request can cost no matter what the visitor talks the model into.
 const MAX_OUTPUT_TOKENS = 700;
 const DEFAULT_DAILY_LIMIT = 10;
+const NVIDIA_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
+// NIM retires model ids (a 410 names the date); if the default dies, set ASK_MODEL.
+const DEFAULT_MODEL = { nvidia: "nvidia/nemotron-3.5-lightning-30b-a3b", anthropic: "claude-opus-5" } as const;
+const ERRORS = {
+  busy: "The assistant is getting a lot of questions right now — try again in a minute.",
+  misconfigured: "The assistant is misconfigured. The rest of the site still works — or email hello@moinuddin.app.",
+  upstream: "The assistant hit an upstream error. Try again, or email hello@moinuddin.app.",
+  unknown: "Something went wrong answering that. Try again, or email hello@moinuddin.app.",
+  refused: "I can't help with that one. Ask me about Moin's projects, research, or experience.",
+};
 const DEFAULT_GLOBAL_DAILY_LIMIT = 300;
+const DEFAULT_MINUTE_LIMIT = 20;
 
 const DECLINE = "I can only talk about Moin's work — his projects, research, experience, and stack. Ask me about any of those.";
 
@@ -110,7 +130,7 @@ async function visitorKey(ip: string, day: string) {
 // real thing.
 const memoryCounts = new Map<string, number>();
 
-async function takeFromQuota(kv: KV | undefined, key: string, limit: number): Promise<number | null> {
+async function takeFromQuota(kv: KV | undefined, key: string, limit: number, ttlSeconds = 60 * 60 * 48): Promise<number | null> {
   if (!kv) {
     if (memoryCounts.size > 5000) memoryCounts.clear();
     const used = memoryCounts.get(key) ?? 0;
@@ -122,7 +142,7 @@ async function takeFromQuota(kv: KV | undefined, key: string, limit: number): Pr
   // count and the limit can overshoot by one or two. For a quota of ten that is fine.
   const used = Number.parseInt((await kv.get(key)) ?? "0", 10) || 0;
   if (used >= limit) return null;
-  await kv.put(key, String(used + 1), { expirationTtl: 60 * 60 * 48 });
+  await kv.put(key, String(used + 1), { expirationTtl: ttlSeconds });
   return limit - used - 1;
 }
 
@@ -147,7 +167,8 @@ function parseTurns(payload: unknown): Turn[] | null {
 }
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }): Promise<Response> => {
-  if (!env.ANTHROPIC_API_KEY) return json(503, { error: "not_configured" });
+  const provider = env.NVIDIA_API_KEY ? "nvidia" : env.ANTHROPIC_API_KEY ? "anthropic" : null;
+  if (!provider) return json(503, { error: "not_configured" });
 
   // Same-origin only. Not a security boundary on its own (headers can be forged
   // outside a browser) but it stops other sites embedding this endpoint for free.
@@ -173,7 +194,13 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
   // Quotas. The site-wide budget is checked first so that, once it is spent, no
   // individual visitor's allowance is burned on a request that cannot be served.
-  const day = new Date().toISOString().slice(0, 10);
+  const now = new Date().toISOString();
+  const day = now.slice(0, 10);
+  // A burst is refused before any daily allowance is spent on it: the provider's
+  // free tier has its own per-minute limit, and tripping that fails every visitor.
+  if ((await takeFromQuota(env.ASK_LIMITS, `ask:${now.slice(0, 16)}:burst`, positiveInt(env.ASK_MINUTE_LIMIT, DEFAULT_MINUTE_LIMIT), 120)) === null) {
+    return json(429, { error: "rate_limited", scope: "burst" }, { "retry-after": "60", "x-ask-remaining": "0" });
+  }
   const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
   const perVisitor = positiveInt(env.ASK_DAILY_LIMIT, DEFAULT_DAILY_LIMIT);
   if ((await takeFromQuota(env.ASK_LIMITS, `ask:${day}:all`, positiveInt(env.ASK_GLOBAL_DAILY_LIMIT, DEFAULT_GLOBAL_DAILY_LIMIT))) === null) {
@@ -188,14 +215,77 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     return plain(DECLINE, { ...quotaHeaders, "x-ask-guard": "screened" });
   }
 
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
-  const model = env.ASK_MODEL ?? "claude-opus-5";
+  const model = env.ASK_MODEL ?? DEFAULT_MODEL[provider];
 
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const writer = writable.getWriter();
   const encoder = new TextEncoder();
+  const write = (text: string) => writer.write(encoder.encode(text));
 
-  const pump = async () => {
+  /**
+   * NVIDIA NIM speaks the OpenAI chat-completions shape and streams server-sent
+   * events. Parsed by hand: it is one line format, and the SDK would be the only
+   * dependency this function has that the other provider does not need.
+   */
+  const pumpNvidia = async () => {
+    const response = await fetch(NVIDIA_URL, {
+      method: "POST",
+      headers: { authorization: `Bearer ${env.NVIDIA_API_KEY}`, "content-type": "application/json", accept: "text/event-stream" },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "system", content: SYSTEM }, ...turns],
+        max_tokens: MAX_OUTPUT_TOKENS,
+        // Factual Q&A over a fixed record: low temperature, no creativity wanted.
+        temperature: 0.2,
+        top_p: 0.9,
+        stream: true,
+        // Nemotron can "think" before answering. Off here: the thinking would burn
+        // the output cap before the answer, and a portfolio question needs none.
+        ...(model.startsWith("nvidia/nemotron") ? { chat_template_kwargs: { enable_thinking: false } } : {}),
+      }),
+    });
+
+    if (!response.ok || !response.body) {
+      // The visitor gets a sentence; the owner gets the reason in the Pages log.
+      console.error(`ask: NIM ${response.status} for ${model}: ${(await response.text().catch(() => "")).slice(0, 300)}`);
+      await write(response.status === 429 ? ERRORS.busy : response.status === 401 || response.status === 403 ? ERRORS.misconfigured : ERRORS.upstream);
+      return;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let wroteAnything = false;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data:")) continue;
+        const payload = line.slice(5).trim();
+        if (!payload || payload === "[DONE]") continue;
+        let event: { choices?: { delta?: { content?: string | null }; finish_reason?: string | null }[] };
+        try {
+          event = JSON.parse(payload);
+        } catch {
+          continue;
+        }
+        const choice = event.choices?.[0];
+        // Reasoning models also stream `reasoning_content`; only the answer is shown.
+        if (choice?.delta?.content) {
+          await write(choice.delta.content);
+          wroteAnything = true;
+        }
+        if (choice?.finish_reason === "content_filter") await write(ERRORS.refused);
+      }
+    }
+    if (!wroteAnything) await write(ERRORS.upstream);
+  };
+
+  const pumpAnthropic = async () => {
+    const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
     try {
       // ASK_MODEL lets the owner trade cost for quality, but the request shape is
       // not uniform across models: `effort` is rejected on Haiku 4.5, and the
@@ -217,26 +307,30 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       });
 
       for await (const event of stream) {
-        if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-          await writer.write(encoder.encode(event.delta.text));
-        }
+        if (event.type === "content_block_delta" && event.delta.type === "text_delta") await write(event.delta.text);
       }
 
       const final = await stream.finalMessage();
-      if (final.stop_reason === "refusal") {
-        await writer.write(encoder.encode("I can't help with that one. Ask me about Moin's projects, research, or experience."));
-      }
+      if (final.stop_reason === "refusal") await write(ERRORS.refused);
     } catch (error) {
       // Most specific first: a rate limit is retryable, a bad key is ours to fix.
-      const message =
-        error instanceof Anthropic.RateLimitError
-          ? "The assistant is getting a lot of questions right now — try again in a minute."
-          : error instanceof Anthropic.AuthenticationError
-            ? "The assistant is misconfigured. The rest of the site still works — or email hello@moinuddin.app."
-            : error instanceof Anthropic.APIError
-              ? "The assistant hit an upstream error. Try again, or email hello@moinuddin.app."
-              : "Something went wrong answering that. Try again, or email hello@moinuddin.app.";
-      await writer.write(encoder.encode(message)).catch(() => {});
+      throw error instanceof Anthropic.RateLimitError
+        ? new Error(ERRORS.busy)
+        : error instanceof Anthropic.AuthenticationError
+          ? new Error(ERRORS.misconfigured)
+          : error instanceof Anthropic.APIError
+            ? new Error(ERRORS.upstream)
+            : new Error(ERRORS.unknown);
+    }
+  };
+
+  const pump = async () => {
+    try {
+      await (provider === "nvidia" ? pumpNvidia() : pumpAnthropic());
+    } catch (error) {
+      const known = Object.values(ERRORS);
+      const message = error instanceof Error && known.includes(error.message) ? error.message : ERRORS.unknown;
+      await write(message).catch(() => {});
     } finally {
       await writer.close().catch(() => {});
     }
@@ -246,6 +340,6 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   void pump();
 
   return new Response(readable, {
-    headers: { ...BASE_HEADERS, "content-type": "text/plain; charset=utf-8", "x-ask-model": model, ...quotaHeaders },
+    headers: { ...BASE_HEADERS, "content-type": "text/plain; charset=utf-8", "x-ask-model": model, "x-ask-provider": provider, ...quotaHeaders },
   });
 };
