@@ -40,6 +40,45 @@ function useAsk() {
   return context;
 }
 
+/**
+ * Reveals model text word by word as it arrives. Gemini's endpoint tends to send a
+ * whole answer in one burst after it finishes thinking, so without this a "streamed"
+ * answer still lands as a block. Catches up faster the further behind it is.
+ */
+function useTypedText(target: string) {
+  const [shown, setShown] = useState(0);
+  const targetRef = useRef(target);
+  targetRef.current = target;
+  const words = target.split(/(\s+)/);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setShown(Number.MAX_SAFE_INTEGER);
+      return;
+    }
+    const timer = window.setInterval(() => {
+      setShown((current) => {
+        const total = targetRef.current.split(/(\s+)/).length;
+        if (current >= total) return current;
+        return Math.min(total, current + Math.max(1, Math.ceil((total - current) / 40)));
+      });
+    }, 30);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return { text: words.slice(0, shown).join(""), typing: shown < words.length };
+}
+
+function TypedAnswer({ text, streaming }: { text: string; streaming: boolean }) {
+  const typed = useTypedText(text);
+  return (
+    <p className="mt-3 whitespace-pre-wrap text-pretty text-[15px] leading-7">
+      {typed.text}
+      {(streaming || typed.typing) && <span aria-hidden="true" className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse bg-foreground" />}
+    </p>
+  );
+}
+
 const PROVIDER_LABEL: Record<string, string> = { gemini: "Gemini", nvidia: "Nemotron", anthropic: "Claude" };
 
 /** Case studies the model named, so its prose can be followed by real links. */
@@ -335,12 +374,7 @@ function SideChat() {
                       <span className={cn("size-1.5 rounded-full bg-accent", exchange.status !== "done" && "animate-pulse")} />
                       {exchange.status === "thinking" ? "Reading the portfolio" : `${PROVIDER_LABEL[exchange.provider ?? ""] ?? "Model"} · grounded in this site`}
                     </span>
-                    {exchange.text && (
-                      <p className="mt-3 whitespace-pre-wrap text-pretty text-[15px] leading-7">
-                        {exchange.text}
-                        {exchange.status === "streaming" && <span aria-hidden="true" className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse bg-foreground" />}
-                      </p>
-                    )}
+                    {exchange.text && <TypedAnswer streaming={exchange.status === "streaming"} text={exchange.text} />}
                     {exchange.status === "done" && cited.length > 0 && (
                       <div className="mt-4 flex flex-wrap gap-2">
                         {cited.map((project) => (
