@@ -105,8 +105,17 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   });
 
   if (!response.ok) {
-    console.error(`contact: resend ${response.status}: ${(await response.text().catch(() => "")).slice(0, 300)}`);
-    return json(502, { error: "send_failed" });
+    const detail = (await response.text().catch(() => "")).slice(0, 300);
+    console.error(`contact: resend ${response.status}: ${detail}`);
+    // Not 502: Cloudflare swaps 5xx bodies for its own error page, which hid the
+    // reason. Resend's error name (e.g. validation_error) is safe to return.
+    let reason = "unknown";
+    try {
+      reason = (JSON.parse(detail) as { name?: string }).name ?? reason;
+    } catch {
+      // keep "unknown"
+    }
+    return json(424, { error: "send_failed", reason, status: String(response.status) });
   }
   return json(200, { ok: "sent" });
 };
