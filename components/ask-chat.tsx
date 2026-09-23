@@ -138,11 +138,32 @@ function TypedAnswer({ text, streaming }: { text: string; streaming: boolean }) 
 }
 
 /**
- * "Thinking…" with a breathing dot, a sheen across the word and a running clock,
+ * "Thinking…" with a Braille spinner, a sheen across the word and a running clock,
  * settling into "Thought for 2.4s" once the first word arrives. Adapted from the
  * ThoughtLine in DocuLens Personal, without its step trace. The clock is real
  * elapsed time; nothing about progress is inferred from it.
  */
+const SPINNER_FRAMES = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏";
+
+/** The Braille spinner from DocuLens Personal: one cell, 80ms a frame. Reduced motion shows the full cell, still. */
+function Spinner() {
+  const [frame, setFrame] = useState(0);
+  const [still, setStill] = useState(false);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setStill(true);
+      return;
+    }
+    const timer = window.setInterval(() => setFrame((n) => (n + 1) % SPINNER_FRAMES.length), 80);
+    return () => window.clearInterval(timer);
+  }, []);
+  return (
+    <span aria-hidden="true" className="inline-block w-[1ch] font-mono text-[14px] leading-none text-accent">
+      {still ? "⠿" : SPINNER_FRAMES[frame]}
+    </span>
+  );
+}
+
 function ThinkingLine({ working, startedAt, ms }: { working: boolean; startedAt: number; ms?: number }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -154,7 +175,7 @@ function ThinkingLine({ working, startedAt, ms }: { working: boolean; startedAt:
 
   return (
     <div className="mt-4 flex items-center gap-2 text-[13px] text-muted" data-working={working || undefined}>
-      <span aria-hidden="true" className={cn("size-1.5 rounded-full bg-accent", working && "thinking-dot")} />
+      {working ? <Spinner /> : <span aria-hidden="true" className="inline-block w-[1ch] text-center font-mono text-[14px] leading-none text-accent">⠿</span>}
       <span className={cn(working && "thinking-sheen")}>{working ? "Thinking…" : "Thought for"}</span>
       <span aria-hidden="true" className="font-mono text-[11.5px] tabular-nums">{seconds}s</span>
       {/* Spoken once when it starts and once when it settles — never the ticking clock. */}
@@ -162,8 +183,6 @@ function ThinkingLine({ working, startedAt, ms }: { working: boolean; startedAt:
     </div>
   );
 }
-
-const PROVIDER_LABEL: Record<string, string> = { gemini: "Gemini", nvidia: "Nemotron", anthropic: "Claude" };
 
 /** Case studies the model named, so its prose can be followed by real links. */
 function mentionedProjects(text: string) {
@@ -463,12 +482,6 @@ function SideChat() {
                   </>
                 ) : (
                   <div className="mt-3">
-                    {exchange.text && (
-                      <span className="inline-flex items-center gap-2 rounded-full border border-border bg-background px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
-                        <span className="size-1.5 rounded-full bg-accent" />
-                        {`${PROVIDER_LABEL[exchange.provider ?? ""] ?? "Model"} · grounded in this site`}
-                      </span>
-                    )}
                     {exchange.text && <TypedAnswer streaming={exchange.status === "streaming"} text={exchange.text} />}
                     {exchange.status === "done" && cited.length > 0 && (
                       <div className="mt-4 flex flex-wrap gap-2">
