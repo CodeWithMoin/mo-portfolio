@@ -1,3 +1,4 @@
+import { ContactForm } from "@/components/contact-form";
 import Image from "next/image";
 import Link from "next/link";
 import { BackgroundStrip } from "@/components/background-strip";
@@ -431,9 +432,11 @@ export default function Home() {
             <h2 className="mt-6 max-w-4xl text-balance text-4xl font-bold leading-[1.02] tracking-[-0.045em] sm:text-6xl lg:text-[4.4rem]">
               Hard problem. Clear evidence. <span className="text-accent">Reliable system.</span>
             </h2>
-            <p className="mt-6 max-w-xl text-[17px] leading-8 text-background/65">Open to {profile.openTo}.</p>
+            <div className="mt-10 grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
+              <div>
+            <p className="max-w-xl text-[17px] leading-8 text-background/65">Open to {profile.openTo}. Write here, or straight to the inbox.</p>
 
-            <div className="mt-10 flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
                 className="btn-paper inline-flex min-h-[3.25rem] items-center gap-2 rounded-full px-7 text-[15px] font-medium"
                 href={profile.links.email}
@@ -447,6 +450,9 @@ export default function Home() {
               >
                 Résumé · one page, PDF <span aria-hidden="true">↗</span>
               </a>
+            </div>
+              </div>
+              <ContactForm />
             </div>
 
             <div className="mt-14 flex flex-wrap items-center justify-between gap-5 border-t border-background/15 pt-6 text-sm text-background/55">
