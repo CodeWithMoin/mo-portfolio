@@ -19,11 +19,7 @@ interface Env {
   RESEND_API_KEY?: string;
   /** Where messages are delivered. Defaults to hello@moinuddin.app. */
   CONTACT_TO?: string;
-  /**
-   * Sender. Must be on a domain verified in Resend. Until moinuddin.app is verified,
-   * Resend's onboarding@resend.dev works — but only delivers to the Resend
-   * account's own address, so set CONTACT_TO to that.
-   */
+  /** Sender, on a domain verified in Resend. Defaults to contact@moinuddin.app. */
   CONTACT_FROM?: string;
   /** Shared with the chat; per-IP counters. */
   ASK_LIMITS?: KV;
@@ -90,7 +86,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   else memory.set(key, used + 1);
 
   const to = env.CONTACT_TO ?? "hello@moinuddin.app";
-  const from = env.CONTACT_FROM ?? "Portfolio <onboarding@resend.dev>";
+  const from = env.CONTACT_FROM ?? "Portfolio <contact@moinuddin.app>";
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
