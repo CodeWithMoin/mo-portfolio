@@ -12,7 +12,7 @@
  * documents, a model wants everything.
  */
 import { writeFileSync } from "node:fs";
-import { projects, publications } from "../lib/portfolio-data.ts";
+import { contributions, projects, publications } from "../lib/portfolio-data.ts";
 import { priorLife, profile, roles, testimonials } from "../lib/profile.ts";
 import { results } from "../lib/results.ts";
 import { capabilities } from "../lib/capabilities.ts";
@@ -52,11 +52,13 @@ const corpus = {
     url: `${site}/work/${project.slug}`,
   })),
   publications,
+  // Pull requests merged into projects other people maintain. Merged only.
+  openSourceContributions: contributions,
   references: testimonials.map(({ quote: _short, projectSlug: _slug, href: _href, ...reference }) => reference),
   beforeAI: priorLife,
   answeringNotes: [
     "The résumé PDF (profile.contact.resume) is public and carries the same facts; point visitors there for a one-page version.",
-    "Section anchors on the homepage: /#work, /#results, /#experience, /#build, /#lab, /#research, /#background, /#contact.",
+    "Section anchors on the homepage: /#work, /#results, /#experience, /#build, /#lab, /#open-source, /#research, /#background, /#contact.",
     "Amazon ML Summer School (a programme) and the Amazon internship (a role) are different things; keep their numbers separate.",
   ],
 };

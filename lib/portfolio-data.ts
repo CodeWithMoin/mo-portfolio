@@ -1141,6 +1141,89 @@ export const repositories: {
 ];
 
 /**
+ * Fixes merged into projects other people maintain. Merged only: an open pull
+ * request is a proposal, not a contribution, so it is not listed until it lands.
+ */
+export const contributions: {
+  /** owner/name, as it reads on GitHub. */
+  repo: string;
+  /** Who maintains it, for a reader who does not know the repository by name. */
+  maintainer: string;
+  number: number;
+  title: string;
+  /** What was broken and what changed, in one or two sentences. */
+  summary: string;
+  language: string;
+  /** ISO date the pull request was merged. */
+  merged: string;
+  href: string;
+}[] = [
+  {
+    repo: "ml-explore/mlx",
+    maintainer: "Apple's array framework for Apple silicon",
+    number: 4546,
+    title: "Empty unsigned sum and prod no longer crash on the GPU",
+    summary:
+      "Summing or multiplying an empty unsigned array raised \"Unable to load kernel\" on Metal, because the kernel that writes the starting value was never built for unsigned types. Added the missing kernels and tests.",
+    language: "C++ · Metal",
+    merged: "2026-10-01",
+    href: "https://github.com/ml-explore/mlx/pull/4546",
+  },
+  {
+    repo: "ml-explore/mlx",
+    maintainer: "Apple's array framework for Apple silicon",
+    number: 4544,
+    title: "Grouped Conv1d and Conv2d start from the right weight range",
+    summary:
+      "Grouped convolutions sized their initial weights from all input channels instead of the channels each group sees, so the range was 0.71× too narrow at 2 groups and 0.35× at 8. It now matches PyTorch's default.",
+    language: "Python",
+    merged: "2026-10-01",
+    href: "https://github.com/ml-explore/mlx/pull/4544",
+  },
+  {
+    repo: "huggingface/speech-to-speech",
+    maintainer: "Hugging Face's open voice-agent pipeline",
+    number: 579,
+    title: "Tool calls with positional arguments are no longer dropped",
+    summary:
+      "When a local model wrote a tool call with positional arguments, they were discarded, the call failed validation and the client received nothing. Positional values now bind to the same signature the model was shown.",
+    language: "Python",
+    merged: "2026-09-29",
+    href: "https://github.com/huggingface/speech-to-speech/pull/579",
+  },
+  {
+    repo: "comet-ml/opik",
+    maintainer: "Comet's LLM evaluation and tracing platform",
+    number: 8427,
+    title: "An empty rule list now switches a rule tier off",
+    summary:
+      "The PromptInjection and Tone metrics treated an empty rule list as \"use the defaults\", so a tier could not be emptied and the score still came from the removed rules. Only None means defaults now.",
+    language: "Python",
+    merged: "2026-09-23",
+    href: "https://github.com/comet-ml/opik/pull/8427",
+  },
+  {
+    repo: "copperheadhq/copperhead",
+    maintainer: "Hardware design tooling",
+    number: 269,
+    title: "The demo no longer writes into the installed package",
+    summary:
+      "A global install put the demo's output inside a root-owned package directory, so it failed with a permission error for normal users. It now writes to the directory the command is run from.",
+    language: "TypeScript",
+    merged: "2026-09-17",
+    href: "https://github.com/copperheadhq/copperhead/pull/269",
+  },
+];
+
+/** How each upstream project is shown in the "Contributed to" strip, keyed by owner/name. */
+export const upstreamProjects: Record<string, { name: string; by: string; logo: string }> = {
+  "ml-explore/mlx": { name: "MLX", by: "Apple", logo: "/contrib/ml-explore.png" },
+  "huggingface/speech-to-speech": { name: "speech-to-speech", by: "Hugging Face", logo: "/contrib/huggingface.png" },
+  "comet-ml/opik": { name: "Opik", by: "Comet", logo: "/contrib/comet-ml.png" },
+  "copperheadhq/copperhead": { name: "Copperhead", by: "Copperhead", logo: "/contrib/copperheadhq.png" },
+};
+
+/**
  * `stageDetails` is keyed by stage name, so a typo or a renamed stage would silently
  * render an empty panel instead of failing. This runs at import time, which means a
  * mismatch breaks `next build` rather than shipping.

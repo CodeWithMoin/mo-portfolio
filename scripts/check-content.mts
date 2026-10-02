@@ -10,7 +10,7 @@
 import { existsSync } from "node:fs";
 import { capabilities, projectsFor } from "../lib/capabilities.ts";
 import { primaryNav, sectionOrder, AUDIENCES } from "../lib/audience.ts";
-import { projects, publications } from "../lib/portfolio-data.ts";
+import { contributions, projects, publications, upstreamProjects } from "../lib/portfolio-data.ts";
 import { ask, index } from "../lib/knowledge.ts";
 import { buildIndex, search, tokenize, type Doc } from "../lib/retrieval.ts";
 import { roles, testimonials } from "../lib/profile.ts";
@@ -56,6 +56,22 @@ for (const role of roles) {
   if (!role.caseStudy) continue;
   check(`role ${role.id} links a real case study`, projects.some((p) => p.slug === role.caseStudy));
 }
+
+// A pull request link is the whole claim: it has to point at the pull request it names.
+for (const contribution of contributions) {
+  check(`contribution ${contribution.repo} #${contribution.number}: link matches repo and number`,
+    contribution.href === `https://github.com/${contribution.repo}/pull/${contribution.number}`, contribution.href);
+  check(`contribution ${contribution.repo} #${contribution.number}: merge date is a real date`,
+    /^\d{4}-\d{2}-\d{2}$/.test(contribution.merged) && !Number.isNaN(Date.parse(contribution.merged)), contribution.merged);
+}
+// The strip renders a tile per repo; a repo with no entry would render blank.
+for (const repo of new Set(contributions.map((c) => c.repo))) {
+  check(`upstream ${repo}: has a display entry`, repo in upstreamProjects);
+  if (repo in upstreamProjects) {
+    check(`upstream ${repo}: logo exists`, existsSync(new URL(`../public${upstreamProjects[repo].logo}`, import.meta.url)), upstreamProjects[repo].logo);
+  }
+}
+check("contributions are unique", new Set(contributions.map((c) => c.href)).size === contributions.length);
 
 // A technology on a project but in no stack group renders nowhere, silently.
 {
@@ -130,6 +146,7 @@ const answerable = [
   "badminton nationals", "what is decode", "does he know distributed systems",
   "tell me about his education", "is he available", "can he do frontend",
   "what did he build at amazon", "how do I contact him", "whoami", "ls",
+  "has he contributed to open source", "mlx metal kernel", "hugging face tool calls",
 ];
 const refusable = ["pineapple pizza recipe", "the weather today", "quantum blockchain nft"];
 for (const q of answerable) check(`answers: "${q}"`, ask(q).via !== "none");

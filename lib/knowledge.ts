@@ -1,5 +1,5 @@
 import { profile, roles, priorLife, testimonials } from "@/lib/profile";
-import { projects, publications } from "@/lib/portfolio-data";
+import { contributions, projects, publications } from "@/lib/portfolio-data";
 import { buildIndex, search, type Doc, type Scored } from "@/lib/retrieval";
 
 /**
@@ -59,6 +59,22 @@ const docs: Doc[] = [
     href: "/#research",
     snippet: `${publication.role}, ${publication.venue} — ${publication.status}.`,
     body: [publication.venue, publication.role, publication.status, publication.abstract].join(" "),
+  })),
+  ...contributions.map<Doc>((contribution) => ({
+    id: `contribution:${contribution.repo}#${contribution.number}`,
+    kind: "contribution",
+    title: `${contribution.repo} #${contribution.number}`,
+    href: contribution.href,
+    snippet: `Merged into ${contribution.repo}: ${contribution.title}.`,
+    body: [
+      contribution.repo,
+      contribution.repo,
+      contribution.maintainer,
+      contribution.title,
+      contribution.summary,
+      contribution.language,
+      "open source upstream contribution pull request merged fix",
+    ].join(" "),
   })),
   ...priorLife.map<Doc>((entry) => ({
     id: `background:${entry.id}`,
@@ -169,6 +185,17 @@ const intents: Intent[] = [
         `${byslug("markalign")!.title} — ${byslug("markalign")!.metrics[0].value} ${byslug("markalign")!.metrics[0].label}.`,
       ],
       sources: [{ label: "Research", href: "/#research" }, link("smart-turn"), link("markalign")],
+      via: "matched",
+    }),
+  },
+  {
+    id: "upstream",
+    match: /\bopen[- ]source\b|\bcontribut|\bpull requests?\b|\bprs?\b|\bupstream\b|\bmlx\b|\bhugging ?face\b|\bopik\b/i,
+    suggested: "Has he contributed to open source?",
+    build: () => ({
+      text: `${contributions.length} pull requests merged into ${new Set(contributions.map((c) => c.repo)).size} projects he does not maintain.`,
+      bullets: contributions.map((c) => `${c.repo} #${c.number} — ${c.title}.`),
+      sources: [{ label: "Open source", href: "/#open-source" }, { label: "GitHub", href: profile.links.github }],
       via: "matched",
     }),
   },

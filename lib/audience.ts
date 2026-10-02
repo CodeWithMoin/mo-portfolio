@@ -57,8 +57,9 @@ export const sectionLabels: Record<string, string> = {
  * HTML regardless of which audience is active.
  */
 export const sectionOrder: Record<Audience, string[]> = {
-  // No "open-source": every repository there is a project already shown under Work.
-  recruiter: ["work", "results", "experience", "testimonials", "build", "research", "lab", "background"],
+  // "open-source" earns its place here for the upstream pull requests: a fix accepted
+  // by another team's maintainers is evidence a recruiter cannot get from Work.
+  recruiter: ["work", "results", "experience", "open-source", "testimonials", "build", "research", "lab", "background"],
   // Evidence first, backstory last. The previous order ran pattern → before →
   // badminton back to back, putting three sections of pre-AI history between the
   // lab and the code. The arc is a good closer, not a second act.

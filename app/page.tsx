@@ -20,7 +20,7 @@ import { SystemReadout } from "@/components/system-readout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/cn";
-import { projects, publications, repositories } from "@/lib/portfolio-data";
+import { contributions, projects, publications, repositories, upstreamProjects } from "@/lib/portfolio-data";
 import { profile, testimonials } from "@/lib/profile";
 
 const featuredSlugs = ["amazon-applied-science", "decode", "doculens-ai", "taxonomy-evaluation-research"];
@@ -37,6 +37,15 @@ const reviewCards = [
   { src: "/review-5.webp", alt: "Fiverr review, five stars, Mexico: praises excellent work and punctual delivery" },
   { src: "/review-6.webp", alt: "Fiverr review, 4.3 stars, United States: notes talent and resourcefulness alongside criticism of communication" },
 ];
+
+// One tile per upstream project, linking to the merged pull requests there.
+const githubUser = profile.links.github.split("/").pop();
+const upstream = [...new Set(contributions.map((contribution) => contribution.repo))].map((repo) => ({
+  repo,
+  ...upstreamProjects[repo],
+  merged: contributions.filter((contribution) => contribution.repo === repo).length,
+  href: `https://github.com/${repo}/pulls?q=${encodeURIComponent(`is:pr author:${githubUser} is:merged`)}`,
+}));
 
 const milestones = [
   { age: "11", domain: "Badminton", detail: "State-level competition. Student Nationals silver in doubles, 2018. Stopped during lockdown." },
@@ -213,8 +222,39 @@ export default function Home() {
               <SectionHeading
                 eyebrow="Open source"
                 title="The implementation is part of the argument."
-                description="Public repositories include product code, typed APIs, tests, CI, deployment notes, and explicit limitations—not only screenshots."
+                description="Fixes merged into projects other teams maintain, and my own repositories with tests, CI, deployment notes, and explicit limitations."
               />
+            </Reveal>
+            <Reveal delay={0.05}>
+              <Card className="mb-5 overflow-hidden p-6 sm:p-7">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardLabel>Contributed to</CardLabel>
+                  <p className="text-[15px] text-muted">
+                    {contributions.length} pull requests merged into {upstream.length} projects
+                  </p>
+                </div>
+                <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {upstream.map((project) => (
+                    <li key={project.repo}>
+                      <a
+                        className="group flex h-full items-center gap-3.5 rounded-2xl border border-border bg-white p-4 transition hover:border-foreground/20"
+                        href={project.href}
+                        rel="noreferrer"
+                        target="_blank"
+                      >
+                        <Image alt="" className="size-11 shrink-0 rounded-xl border border-border object-cover" height={44} src={project.logo} width={44} />
+                        <span className="min-w-0">
+                          <span className="block truncate text-base font-bold tracking-[-0.025em] transition group-hover:text-accent">{project.name}</span>
+                          <span className="mt-0.5 block text-[13px] text-muted">
+                            {project.by === project.name ? "" : `${project.by} · `}
+                            {project.merged} merged
+                          </span>
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
             </Reveal>
             <div className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr]">
               <Card className="flex flex-col overflow-hidden p-7">
@@ -224,6 +264,7 @@ export default function Home() {
                 <div className="mt-10 space-y-4 border-t border-border pt-5 text-[15px]">
                   <div className="flex items-center justify-between gap-4"><span className="text-muted">Latest</span><span className="font-medium">MarkAlign · Trellis</span></div>
                   <div className="flex items-center justify-between gap-4"><span className="text-muted">Languages</span><span className="font-medium">Python · TypeScript</span></div>
+                  <div className="flex items-center justify-between gap-4"><span className="text-muted">Merged upstream</span><span className="font-medium">{contributions.length} pull requests</span></div>
                   <div className="flex items-center justify-between gap-4"><span className="text-muted">MIT-licensed</span><span className="font-medium">{repositories.filter((repository) => repository.license === "MIT").length} of {repositories.length}</span></div>
                 </div>
                 <a className="mt-8 inline-flex text-sm font-medium transition hover:text-accent" href={profile.links.github} rel="noreferrer" target="_blank">

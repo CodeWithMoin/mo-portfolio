@@ -9,7 +9,7 @@
 
 export type Doc = {
   id: string;
-  kind: "project" | "role" | "research" | "profile" | "background";
+  kind: "project" | "role" | "research" | "profile" | "background" | "contribution";
   title: string;
   href?: string;
   /** One-line answer used when this document is the top hit. */
