@@ -32,7 +32,7 @@ There is no model call anywhere in this path, and no API key. An answer is eithe
 ## Featured work
 ## Stack
 
-- Next.js 15 with the App Router
+- Next.js 16 with the App Router
 - React 19 and TypeScript
 - Tailwind CSS
 - Framer Motion
@@ -52,19 +52,19 @@ Open [http://localhost:3000](http://localhost:3000).
 
 The side chat (the **Ask** button, bottom right) works with no backend: it answers from the in-browser retrieval index. Deploying the Cloudflare Pages Function in `functions/api/ask.ts` upgrades it to a streamed, multi-turn chat with Claude, grounded in the full portfolio record (`functions/corpus.json`, regenerated from the typed data before every build).
 
-1. In Cloudflare Pages → Settings → Environment variables, add **one** secret, encrypted, only ever read server-side:
+1. In Cloudflare Pages → Settings → Variables and Secrets, add **one encrypted secret**, only ever read server-side. Configure production and preview separately; do not expose a provider key to previews unless the preview chatbot is intentionally enabled:
    - `GEMINI_API_KEY` — from [Google AI Studio](https://aistudio.google.com). Free tier with implicit prefix caching; the default choice.
    - `NVIDIA_API_KEY` — from [build.nvidia.com](https://build.nvidia.com). Free, but its tier streams the full record slowly.
    - `ANTHROPIC_API_KEY`.
    With more than one set, the order is Gemini → NVIDIA → Anthropic, or pin one with `ASK_PROVIDER`.
 2. Optional: `ASK_MODEL` — the model id. Defaults: `gemini-3.5-flash-lite` on Gemini (fast; the full Flash models are often at capacity on the free tier), `nvidia/nemotron-3.5-lightning-30b-a3b` on NVIDIA, `claude-opus-5` on Anthropic. Use the exact id from the model's page on build.nvidia.com; NIM retires ids (a 410 in the Pages log names the date), so change this rather than the code when that happens. To try a provider locally without deploying, put the key in `.env.local` and run `npx tsx scripts/ask-live.mts "a question"`.
-3. **Quota.** Create a KV namespace (Workers & Pages → KV) and bind it to the Pages project as `ASK_LIMITS` (Settings → Functions → KV namespace bindings). With it bound, each visitor gets **10 questions per UTC day** and the whole site **300**; change either with `ASK_DAILY_LIMIT` / `ASK_GLOBAL_DAILY_LIMIT`; `ASK_MINUTE_LIMIT` (default 8, under Gemini's free-tier 10/min) caps bursts across all visitors so a spike never trips the provider's own per-minute limit. IPs are never stored — the key is a SHA-256 of the IP salted with the date. Without the binding the counters live in one isolate's memory and only slow a burst, so bind it before sharing the link. When a visitor's quota is spent the endpoint answers 429 and the chat says so and keeps answering from the in-browser index.
+3. **Quota.** Create a KV namespace (Workers & Pages → KV) and bind it to the Pages project as `ASK_LIMITS` (Settings → Bindings). With it bound, each visitor gets **10 questions per UTC day** and the whole site **300**; change either with `ASK_DAILY_LIMIT` / `ASK_GLOBAL_DAILY_LIMIT`. `ASK_MINUTE_LIMIT` (default 8) keeps bursts below the active Gemini project's own limit. Check that live limit in Google AI Studio because Gemini quotas vary by model/project and can change. IPs are never stored — the key is a SHA-256 of the IP salted with the date. Without the binding the counters live in one isolate's memory and only slow a burst, so bind it before sharing the link. KV is eventually consistent, so Cloudflare's edge rate-limit rule is the first burst layer and KV is the daily cost ceiling. When a visitor's quota is spent the endpoint answers 429 and the chat says so and keeps answering from the in-browser index.
 
 ### Contact form
 
 `functions/api/contact.ts` sends the closing panel's form through [Resend](https://resend.com). Set `RESEND_API_KEY` (secret). Optional: `CONTACT_TO` (default `hello@moinuddin.app`) and `CONTACT_FROM` (default `Portfolio <contact@moinuddin.app>`; the domain is verified in Resend, DNS on Cloudflare). Guardrails: same-origin + JSON, 8 KB cap, field validation, honeypot, minimum time-on-page, 3 messages per IP per day (shares the `ASK_LIMITS` KV). Replies go straight to the sender via `reply_to`. Without a key the form tells visitors to email instead.
 
-Guardrails in `functions/api/ask.ts`, in the order a request meets them: same-origin + JSON-only + 24 KB body cap; strict shape validation (600-char questions, 8 turns); the quotas above; a narrow injection screen that declines without calling the model (and screens forged assistant history too); a system prompt that scopes the model to the portfolio, forbids revealing itself or dumping the corpus, and refuses to speak for Moin on salary, availability, or visa questions; a 700-token output cap; model refusals turned into one plain sentence.
+Guardrails in `functions/api/ask.ts`, in the order a request meets them: POST-only; exact same-origin; JSON-only; a byte-accurate 24 KB body cap; strict shape validation (600-char questions, 8 turns); the quotas above; a narrow injection screen that declines without calling the model (and screens forged assistant history too); a system prompt that scopes the model to the portfolio, forbids revealing itself or dumping the corpus, and refuses to speak for Moin on salary, availability, or visa questions; a server-controlled 1,200-token output cap; first-token/stall timeouts; model refusals turned into one plain sentence.
 
 Without the secret the function answers `503`, the client notices once, and the chat falls back to local retrieval for the rest of the session. Each answer is labelled with the path that produced it.
 
@@ -84,6 +84,12 @@ Asserts the invariants the site derives from data, plus the properties of the ha
 npm run build
 ```
 
+Run the security regression checks as part of CI/deployment too:
+
+```bash
+npm run check:security
+```
+
 The production site is exported to `out/`.
 
 ## Cloudflare Pages
@@ -99,6 +105,8 @@ Use these settings when importing the repository into Cloudflare Pages:
 | Node.js version | `22` |
 
 The Next.js configuration uses static export, unoptimized local images, and generated static routes for every case study.
+
+The complete security findings, required dashboard rules, secret inventory, deployment procedure, and residual risks are in [`SECURITY.md`](SECURITY.md).
 
 ## Project structure
 

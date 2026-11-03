@@ -2,8 +2,14 @@ node_modules/
 .next/
 out/
 
-.env
-.env*.local
+# Local/runtime secrets. Keep the example file committable, but never any real
+# Pages/Workers environment file (including production and preview variants).
+.env*
+!.env.example
+.dev.vars*
+.wrangler/
+*.pem
+*.key
 
 npm-debug.log*
 yarn-debug.log*

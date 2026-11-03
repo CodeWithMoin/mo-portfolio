@@ -30,8 +30,19 @@ const PER_IP_PER_DAY = 3;
 const MIN_FILL_MS = 2_500;
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,255}\.[^\s@]{2,}$/;
 
-const json = (status: number, body: Record<string, string>) =>
-  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
+const BASE_HEADERS = {
+  "cache-control": "no-store",
+  "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
+  "cross-origin-resource-policy": "same-origin",
+  "permissions-policy": "camera=(), geolocation=(), microphone=()",
+  "referrer-policy": "no-referrer",
+  "strict-transport-security": "max-age=31536000",
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY",
+};
+
+const json = (status: number, body: Record<string, string>, headers: Record<string, string> = {}) =>
+  new Response(JSON.stringify(body), { status, headers: { ...BASE_HEADERS, "content-type": "application/json", ...headers } });
 
 const escape = (text: string) => text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
@@ -42,13 +53,13 @@ async function ipKey(ip: string, day: string) {
 
 const memory = new Map<string, number>();
 
-export const onRequestPost = async ({ request, env }: { request: Request; env: Env }): Promise<Response> => {
+const handlePost = async ({ request, env }: { request: Request; env: Env }): Promise<Response> => {
   if (!env.RESEND_API_KEY) return json(503, { error: "not_configured" });
 
   const origin = request.headers.get("origin");
   let sameOrigin = false;
   try {
-    sameOrigin = !!origin && new URL(origin).host === new URL(request.url).host;
+    sameOrigin = !!origin && new URL(origin).origin === new URL(request.url).origin;
   } catch {
     sameOrigin = false;
   }
@@ -57,8 +68,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
   let payload: Record<string, unknown>;
   try {
+    const declaredLength = Number.parseInt(request.headers.get("content-length") ?? "0", 10);
+    if (declaredLength > MAX_BODY_BYTES) return json(413, { error: "too_large" });
     const raw = await request.text();
-    if (raw.length > MAX_BODY_BYTES) return json(413, { error: "too_large" });
+    if (new TextEncoder().encode(raw).byteLength > MAX_BODY_BYTES) return json(413, { error: "too_large" });
     payload = JSON.parse(raw);
   } catch {
     return json(400, { error: "invalid_request" });
@@ -87,31 +100,35 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
   const to = env.CONTACT_TO ?? "hello@moinuddin.app";
   const from = env.CONTACT_FROM ?? "Portfolio <contact@moinuddin.app>";
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      reply_to: email,
-      subject: `Portfolio: ${name}`,
-      text: `${message}\n\n— ${name} <${email}>\nSent from moinuddin.app`,
-      html: `<p style="white-space:pre-wrap;font:15px/1.6 -apple-system,sans-serif">${escape(message)}</p><p style="color:#6b6862;font:13px -apple-system,sans-serif">— ${escape(name)} &lt;${escape(email)}&gt;<br>Sent from moinuddin.app · reply to answer them directly</p>`,
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      signal: AbortSignal.timeout(10_000),
+      headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        from,
+        to: [to],
+        reply_to: email,
+        subject: `Portfolio: ${name}`,
+        text: `${message}\n\n— ${name} <${email}>\nSent from moinuddin.app`,
+        html: `<p style="white-space:pre-wrap;font:15px/1.6 -apple-system,sans-serif">${escape(message)}</p><p style="color:#6b6862;font:13px -apple-system,sans-serif">— ${escape(name)} &lt;${escape(email)}&gt;<br>Sent from moinuddin.app · reply to answer them directly</p>`,
+      }),
+    });
+  } catch (error) {
+    console.error(`contact: resend request failed: ${error instanceof Error ? error.name : "unknown"}`);
+    return json(424, { error: "send_failed" });
+  }
 
   if (!response.ok) {
-    const detail = (await response.text().catch(() => "")).slice(0, 300);
-    console.error(`contact: resend ${response.status}: ${detail}`);
-    // Not 502: Cloudflare swaps 5xx bodies for its own error page, which hid the
-    // reason. Resend's error name (e.g. validation_error) is safe to return.
-    let reason = "unknown";
-    try {
-      reason = (JSON.parse(detail) as { name?: string }).name ?? reason;
-    } catch {
-      // keep "unknown"
-    }
-    return json(424, { error: "send_failed", reason, status: String(response.status) });
+    console.error(`contact: resend upstream status ${response.status}`);
+    return json(424, { error: "send_failed" });
   }
   return json(200, { ok: "sent" });
+};
+
+/** Explicitly reject every method except POST. */
+export const onRequest = async (context: { request: Request; env: Env }): Promise<Response> => {
+  if (context.request.method !== "POST") return json(405, { error: "method_not_allowed" }, { allow: "POST" });
+  return handlePost(context);
 };

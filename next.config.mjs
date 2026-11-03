@@ -7,7 +7,6 @@ const nextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   trailingSlash: true,
-  experimental: { webpackBuildWorker: false },
 };
 
 export default nextConfig;

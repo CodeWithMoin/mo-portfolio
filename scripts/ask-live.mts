@@ -7,7 +7,7 @@
  * (gitignored). Prints the streamed answer and the response headers; never the key.
  */
 import { existsSync, readFileSync } from "node:fs";
-import { onRequestPost } from "../functions/api/ask.ts";
+import { onRequest } from "../functions/api/ask.ts";
 
 const env: Record<string, string> = {};
 if (existsSync(".env.local")) {
@@ -27,7 +27,7 @@ const history: { role: "user" | "assistant"; content: string }[] = [];
 for (const question of questions) {
   history.push({ role: "user", content: question });
   const started = Date.now();
-  const response = await onRequestPost({
+  const response = await onRequest({
     request: new Request(url, {
       method: "POST",
       headers: { origin: "https://moinuddin.app", "content-type": "application/json", "cf-connecting-ip": "127.0.0.1" },

@@ -1,3 +1,24 @@
+# Baseline browser protections for every static response. The app has two small
+# inline boot/JSON-LD scripts and Tailwind/React emit inline styles, so those two
+# directives intentionally retain 'unsafe-inline'; every network source remains
+# same-origin.
+/*
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; connect-src 'self'; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data:; object-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; upgrade-insecure-requests
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  Permissions-Policy: camera=(), display-capture=(), geolocation=(), microphone=(), payment=(), usb=()
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+
+# Never index Cloudflare's default or branch preview domains. A dashboard Bulk
+# Redirect should also send the production pages.dev hostname to moinuddin.app.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex, nofollow
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex, nofollow
+
 # The résumé gets swapped independently of code changes — force revalidation on every
 # request so a new upload shows up immediately instead of waiting out a cached copy.
 /Moinuddin_Shaik_Resume.pdf

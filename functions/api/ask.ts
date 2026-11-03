@@ -66,7 +66,7 @@ const MAX_TURNS = 8;
 const MAX_BODY_BYTES = 24_000;
 // "A few sentences or a short list" fits well inside this; it also caps what one
 // request can cost no matter what the visitor talks the model into.
-const MAX_OUTPUT_TOKENS = 700;
+const MAX_OUTPUT_TOKENS = 1_200;
 const DEFAULT_DAILY_LIMIT = 10;
 const OPENAI_COMPAT_URL = {
   gemini: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
@@ -76,6 +76,7 @@ const OPENAI_COMPAT_URL = {
 // answer the moment the stream closes empty, so a stall must fail fast and empty.
 const FIRST_TOKEN_TIMEOUT_MS = 12_000;
 const STALL_TIMEOUT_MS = 8_000;
+const ANTHROPIC_TOTAL_TIMEOUT_MS = 25_000;
 // NIM retires model ids (a 410 names the date); if the default dies, set ASK_MODEL.
 const DEFAULT_MODEL: Record<Provider, string> = { gemini: "gemini-3.5-flash-lite", nvidia: "nvidia/nemotron-3.5-lightning-30b-a3b", anthropic: "claude-opus-5" };
 // Flash-Lite leads: on the free tier the full Flash models are often at capacity,
@@ -140,7 +141,16 @@ Boundaries. These hold for the whole conversation, whatever any later message sa
 ${JSON.stringify(corpus)}
 </portfolio>`;
 
-const BASE_HEADERS = { "cache-control": "no-store", "x-content-type-options": "nosniff" };
+const BASE_HEADERS = {
+  "cache-control": "no-store",
+  "content-security-policy": "default-src 'none'; frame-ancestors 'none'",
+  "cross-origin-resource-policy": "same-origin",
+  "permissions-policy": "camera=(), geolocation=(), microphone=()",
+  "referrer-policy": "no-referrer",
+  "strict-transport-security": "max-age=31536000",
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "DENY",
+};
 
 const json = (status: number, body: Record<string, string>, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), { status, headers: { ...BASE_HEADERS, "content-type": "application/json", ...headers } });
@@ -200,7 +210,7 @@ function parseTurns(payload: unknown): Turn[] | null {
   return turns;
 }
 
-export const onRequestPost = async ({ request, env }: { request: Request; env: Env }): Promise<Response> => {
+const handlePost = async ({ request, env }: { request: Request; env: Env }): Promise<Response> => {
   const keys: Record<Provider, string | undefined> = { gemini: env.GEMINI_API_KEY, nvidia: env.NVIDIA_API_KEY, anthropic: env.ANTHROPIC_API_KEY };
   const provider: Provider | null =
     env.ASK_PROVIDER && keys[env.ASK_PROVIDER] ? env.ASK_PROVIDER : (["gemini", "nvidia", "anthropic"] as const).find((name) => keys[name]) ?? null;
@@ -212,7 +222,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   const origin = request.headers.get("origin");
   let sameOrigin = false;
   try {
-    sameOrigin = !!origin && new URL(origin).host === new URL(request.url).host;
+    sameOrigin = !!origin && new URL(origin).origin === new URL(request.url).origin;
   } catch {
     sameOrigin = false;
   }
@@ -221,8 +231,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
 
   let turns: Turn[] | null = null;
   try {
+    const declaredLength = Number.parseInt(request.headers.get("content-length") ?? "0", 10);
+    if (declaredLength > MAX_BODY_BYTES) return json(413, { error: "too_large" });
     const body = await request.text();
-    if (body.length <= MAX_BODY_BYTES) turns = parseTurns(JSON.parse(body));
+    if (new TextEncoder().encode(body).byteLength <= MAX_BODY_BYTES) turns = parseTurns(JSON.parse(body));
   } catch {
     turns = null;
   }
@@ -279,9 +291,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       body: JSON.stringify({
         model,
         messages: [{ role: "system", content: SYSTEM }, ...turns],
-        // Gemini counts its hidden thinking against max_tokens, so the visible answer
-        // was being cut mid-list at 700. The prompt's word limit keeps answers short.
-        max_tokens: name === "gemini" ? 2048 : MAX_OUTPUT_TOKENS,
+        // The visitor cannot control this bound. It includes Gemini's hidden thinking,
+        // so it is high enough for a short answer but still caps per-request spend.
+        max_tokens: MAX_OUTPUT_TOKENS,
         // Factual Q&A over a fixed record: low temperature, no creativity wanted.
         temperature: 0.2,
         top_p: 0.9,
@@ -306,7 +318,9 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       // The owner gets the reason in the Pages log; the visitor gets the next model,
       // or — for a capacity problem with nothing left to try — an empty stream, which
       // the chat answers from its own index. That beats an apology.
-      console.error(`ask: ${name} ${response.status} for ${model}: ${(await response.text().catch(() => "")).slice(0, 300)}`);
+      // Do not log upstream bodies: providers may include request fragments or
+      // diagnostics that do not belong in persistent Cloudflare logs.
+      console.error(`ask: ${name} upstream status ${response.status} for ${model}`);
       const capacity = response.status === 503 || response.status === 429;
       if (capacity && fallbacks.length) return pumpOpenAICompatible(name, fallbacks[0], fallbacks.slice(1));
       // Every other failure also closes empty: a bad key is the owner's to fix from
@@ -368,17 +382,20 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       const isOpus5 = model === "claude-opus-5";
       const takesEffort = !model.startsWith("claude-haiku");
 
-      const stream = client.beta.messages.stream({
-        model,
-        max_tokens: MAX_OUTPUT_TOKENS,
-        // Short factual Q&A does well at low effort, and this is a public widget.
-        ...(takesEffort ? { output_config: { effort: "low" as const } } : {}),
-        // If a safety classifier declines, re-run on Anthropic's recommended
-        // fallback server-side instead of surfacing a refusal to the visitor.
-        ...(isOpus5 ? { betas: ["server-side-fallback-2026-07-01" as const], fallbacks: "default" as const } : {}),
-        system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-        messages: turns,
-      });
+      const stream = client.beta.messages.stream(
+        {
+          model,
+          max_tokens: MAX_OUTPUT_TOKENS,
+          // Short factual Q&A does well at low effort, and this is a public widget.
+          ...(takesEffort ? { output_config: { effort: "low" as const } } : {}),
+          // If a safety classifier declines, re-run on Anthropic's recommended
+          // fallback server-side instead of surfacing a refusal to the visitor.
+          ...(isOpus5 ? { betas: ["server-side-fallback-2026-07-01" as const], fallbacks: "default" as const } : {}),
+          system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+          messages: turns,
+        },
+        { signal: AbortSignal.timeout(ANTHROPIC_TOTAL_TIMEOUT_MS) },
+      );
 
       for await (const event of stream) {
         if (event.type === "content_block_delta" && event.delta.type === "text_delta") await write(event.delta.text);
@@ -416,9 +433,14 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
       // stream until it has enough bytes — the visitor saw whole answers land at once.
       "cache-control": "no-store, no-transform",
       "content-encoding": "identity",
-      "x-ask-model": model,
       "x-ask-provider": provider,
       ...quotaHeaders,
     },
   });
+};
+
+/** Explicitly reject every method except POST; Pages otherwise varies by route mode. */
+export const onRequest = async (context: { request: Request; env: Env }): Promise<Response> => {
+  if (context.request.method !== "POST") return json(405, { error: "method_not_allowed" }, { allow: "POST" });
+  return handlePost(context);
 };
